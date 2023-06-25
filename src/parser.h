@@ -4,16 +4,16 @@
 #define TOKENS
 
 typedef enum TokenType {
-    TokenType_Ident = 0,
-    TokenType_LeftParenthesis = 1,
-    TokenType_RightParenthesis = 2,
-    TokenType_LeftBracket = 3,
-    TokenType_RightBracket = 4,
-    TokenType_DoubleQuote = 5,
-    TokenType_SingleQuote = 6,
-    TokenType_DollarSign = 7,
-    TokenType_EqualSign = 8,
-    TokenType_Space = 9,
+    TokenType_Ident,
+    TokenType_LeftParenthesis,
+    TokenType_RightParenthesis,
+    TokenType_LeftBracket,
+    TokenType_RightBracket,
+    TokenType_DoubleQuote,
+    TokenType_SingleQuote,
+    TokenType_DollarSign,
+    TokenType_EqualSign,
+    TokenType_Space,
 } TokenType;
 typedef enum IdentType {
     IdentType_println,
@@ -30,6 +30,7 @@ typedef enum IdentType {
 typedef struct Token {
     char* value;
     TokenType token_type;
+    char character;
 } Token;
 
 typedef struct Expression {
@@ -39,7 +40,7 @@ typedef struct Expression {
 } Expression;
 
 Expression EXPRESSION_new();
-void EXPRESSION_append(Expression *P_expr, Token token);
+void EXPRESSIONappend(Expression *P_expr, Token token);
 
 typedef struct Expressions {
     Expression* exprs;

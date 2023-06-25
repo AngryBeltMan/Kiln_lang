@@ -6,11 +6,8 @@
 #include "parser.h"
 #define TOKEN_CMP(ident,name,type) if (!strcmp(ident,name)) { return type; }
 
-
-
 Compiler COMPILER_new() {
     Compiler compiler;
-    fclose(fopen(BUILDNAME, "w"));
     FILE *fs = fopen(BUILDNAME, "w");
     compiler.file = fs;
     return compiler;
@@ -36,29 +33,34 @@ void COMPILER_parse(Compiler *P_comp,Expressions *P_exprs) {
         switch (token.token_type) {
             case TokenType_Ident:
                 switch (get_ident_type(token.value)) {
+                    // println("hello world");
                     case IdentType_println:
                         printf("ident println\n");
                         fprintf(P_comp->file, "printf(\"");
-                        int text = 3;
-                        if (P_exprs->exprs[i].tokens[text].token_type == TokenType_DoubleQuote) {
-                            printf("true\n");
-                        } else { printf("false %i\n",P_exprs->exprs[i].tokens[text].token_type );}
-
-                        /* while (P_exprs->exprs[i].tokens[text].token_type != TokenType_DoubleQuote) { */
-                        /*     fprintf(P_comp->file, "%s",P_exprs->exprs[i].tokens[text].value); */
-                        /*     ++text; */
-                        /* } */
+                        for (int text = 3; text < (P_exprs->exprs[i].size/sizeof(Token)); ++text) {
+                            Token *token = &P_exprs->exprs[i].tokens[text];
+                            printf("%i\n",token->token_type);
+                            if (token->token_type == 5) { printf("breaking\n"); break; }
+                            printf("num %i\n",text);
+                            printf("num %s\n",token->value);
+                            if (token->value) {fprintf(P_comp->file,"%s",token->value);} else { fprintf(P_comp->file,"%c",token->character); }
+                        }
                         fprintf(P_comp->file, "\");\n");
+                        continue;
+                        // let num $int = 10;
+                    case IdentType_var_init:
+                        printf("initing var\n");
+                        Token name;
+                        for (int name_token = 0; name_token < (P_exprs->exprs[i].size)/sizeof(Token); ++name_token) {
+
+                        }
+                        Token type = P_exprs->exprs[i].tokens[3];
+                        printf("%s %s\n",type.value,name.value);
+                        fprintf(P_comp->file,"%s %s;\n",type.value,name.value);
                         continue;
                     default:
                         continue;
                 }
-            case IdentType_var_init:
-                printf("");
-                Token name = P_exprs->exprs[i].tokens[1];
-                Token type = P_exprs->exprs[i].tokens[3];
-                fprintf(P_comp->file,"%s %s;\n",type.value,name.value);
-                continue;
             default:
                 printf("other type %i\n",token.token_type);
                 continue;
@@ -67,5 +69,5 @@ void COMPILER_parse(Compiler *P_comp,Expressions *P_exprs) {
     fprintf(P_comp->file, "return 0; \n }");
 }
 void COMPILER_drop(Compiler P_comp) {
-    free(P_comp.file);
+    fclose(P_comp.file);
 }

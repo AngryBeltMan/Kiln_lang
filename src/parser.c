@@ -4,14 +4,15 @@
 #include "parser.h"
 #include "contents.c"
 #ifndef TOKENMATCH
-#define TOKENMATCH(char,type)\
-    case char:\
+#define EXP_APPEND(expr,token) /*printf("appended from fn: %s on line: %i\n",__FUNCTION__,__LINE__); */ EXPRESSIONappend(expr,token);
+
+#define TOKENMATCH(match_char,type)\
+    case match_char:\
         terminate = 1;\
         token.value = NULL;\
-        printf("appending type %i\n",type); \
+        token.character = match_char;\
         token.token_type = type;\
-        printf("type is type %i\n",token.token_type); \
-        EXPRESSION_append(&expr,token);\
+        EXP_APPEND(&expr,token);\
         continue;
 #endif
 Expression EXPRESSION_new() {
@@ -21,8 +22,10 @@ Expression EXPRESSION_new() {
     tokens.max = sizeof(Token);
     return tokens;
 }
-void EXPRESSION_append(Expression* P_expr,Token token) {
-    printf("type is now %i\n",token.token_type);
+void EXPRESSIONappend(Expression* P_expr,Token token) {
+    /* printf("type is now %i\n",token.token_type); */
+    /* printf("type value is %s\n",token.value); */
+    /* printf("----------------\n"); */
     if (P_expr->size + sizeof(Token) > P_expr->max) {
         P_expr->max *= 2;
         P_expr->tokens = realloc(P_expr->tokens,P_expr->max);
@@ -31,9 +34,11 @@ void EXPRESSION_append(Expression* P_expr,Token token) {
     P_expr->size += sizeof(Token);
 }
 void EXPRESSION_insert_behind(Expression* P_expr,Token token) {
-    Token current_token = P_expr->tokens[(P_expr->size)/sizeof(Token)];
+    Token current_token = P_expr->tokens[((P_expr->size)/sizeof(Token)) - 1];
+    /* printf("token %i\n",current_token.token_type); */
     P_expr->tokens[((P_expr->size)/sizeof(Token)) - 1] = token;
-    EXPRESSION_append(P_expr, current_token);
+    /* printf("inserting behind\n"); */
+    EXP_APPEND(P_expr, current_token);
 }
 Expressions EXPRESSIONS_new() {
     Expressions exprs;
@@ -55,6 +60,7 @@ void EXPRESSIONS_append(Expressions* P_exprs,Expression expr) {
 void EXPRESSIONS_drop(Expressions exprs) {
     for (int expr = 0;expr < (exprs.size/sizeof(Expression)); ++expr) {
         for (int token = 0; token < (exprs.exprs[expr].size/sizeof(Token));++token) {
+            printf("dropping %s \n",exprs.exprs[expr].tokens[token].value);
             if (exprs.exprs[expr].tokens[token].value != NULL) {
                 free(exprs.exprs[expr].tokens[token].value);
                 exprs.exprs[expr].tokens[token].value = NULL;
@@ -98,7 +104,7 @@ Expressions EXPRESSIONS_from_file(FILE *P_file) {
                 if (identifier == 1) {
                     token.value = value.file;
                     token.token_type = TokenType_Ident;
-                    EXPRESSION_append(&expr, token);
+                    EXP_APPEND(&expr, token);
                     value = CONTENTS_new();
                 }
                 identifier = 0;

@@ -2,15 +2,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
-#include "compiler.h"
+#include "contents.c"
 #include "parser.h"
 #include "parser.c"
-#include "contents.c"
+#include "compiler.h"
 #include "compiler.c"
 
 int main(void) {
     FILE *main_file;
-    main_file = fopen("main.kit", "r");
+    main_file = fopen("main.kiln", "r");
     Expressions exprs =  EXPRESSIONS_from_file(main_file);
     Compiler comp = COMPILER_new();
 
@@ -18,6 +18,6 @@ int main(void) {
 
     EXPRESSIONS_drop(exprs);
     COMPILER_drop(comp);
-    free(main_file);
+    fclose(main_file);
     return 0;
 }
