@@ -1,0 +1,27 @@
+#include <stdlib.h>
+#include <sys/types.h>
+#ifndef TOKENS
+#define TOKENS
+
+typedef enum TokenType {
+    Ident,
+    LeftParenthesis,
+    RightParenthesis,
+    LeftBracket,
+    RightBracket,
+    DoubleQuote,
+    SingleQuote
+} TokenType;
+
+typedef struct Token {
+    char* value;
+    TokenType token_type;
+} Token;
+
+typedef struct Tokens {
+    Token* tokens;
+    uint index;
+} Tokens;
+
+
+#endif
