@@ -18,6 +18,7 @@ typedef enum TokenType {
 typedef enum IdentType {
     IdentType_println,
     IdentType_printfln,
+    IdentType_print,
     IdentType_printf,
     IdentType_varname,
     IdentType_vartype,

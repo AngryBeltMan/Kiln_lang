@@ -60,8 +60,8 @@ void EXPRESSIONS_append(Expressions* P_exprs,Expression expr) {
 void EXPRESSIONS_drop(Expressions exprs) {
     for (int expr = 0;expr < (exprs.size/sizeof(Expression)); ++expr) {
         for (int token = 0; token < (exprs.exprs[expr].size/sizeof(Token));++token) {
-            printf("dropping %s \n",exprs.exprs[expr].tokens[token].value);
             if (exprs.exprs[expr].tokens[token].value != NULL) {
+                printf("dropping %s \n",exprs.exprs[expr].tokens[token].value);
                 free(exprs.exprs[expr].tokens[token].value);
                 exprs.exprs[expr].tokens[token].value = NULL;
             }

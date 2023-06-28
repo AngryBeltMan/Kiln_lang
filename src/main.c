@@ -12,12 +12,13 @@ int main(void) {
     FILE *main_file;
     main_file = fopen("main.kiln", "r");
     Expressions exprs =  EXPRESSIONS_from_file(main_file);
+
     Compiler comp = COMPILER_new();
 
     COMPILER_parse(&comp,&exprs);
-
     EXPRESSIONS_drop(exprs);
     COMPILER_drop(comp);
+
     fclose(main_file);
     return 0;
 }
