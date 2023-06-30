@@ -1,0 +1,4 @@
+#ifndef HEAPARRAYVAL
+#define HEAPARRAYVAL
+static char* HEAPARRAYCONTENTS = "typedef struct __HeapArray {\n void** _vars; uint _max; uint _size;\n } __HeapArray;\n __HeapArray __HeapArrayNew() { \n __HeapArray heap_array;\n heap_array._vars = malloc(sizeof(void**));\n heap_array._max = sizeof(void**);\n heap_array._size = 0;\n return heap_array;\n } \nvoid __HeapArrayAppend( __HeapArray* heap_array, void** value_ref) {\n if (heap_array->_size + sizeof(void**) > heap_array->_max) {\n heap_array->_max *= 2;\n heap_array->_vars = realloc(heap_array->_vars, heap_array->_max);\n }\n heap_array->_vars[(heap_array->_size/sizeof(void**))] = value_ref;\n }\n void __HeapArrayDrop(__HeapArray heap_array) {\n for (int i = 0; i < (heap_array._size/sizeof(void**)); ++i) {\n free(heap_array._vars[i]); \nheap_array._vars[i] = NULL; \n} } ";
+#endif

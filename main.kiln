@@ -1,4 +1,1 @@
-println("hello world");
-println("cool");
-print("hello world");
-let hello $char* = "hello world";
+let hello $int* = @heap 10;

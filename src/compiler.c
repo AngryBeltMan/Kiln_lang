@@ -3,17 +3,25 @@
 #include <string.h>
 #include <sys/types.h>
 #include "compiler.h"
+#include "heap_array.h"
 #include "contents.c"
 #include "parser.h"
 #define TOKEN_CMP(ident,name,type) if (!strcmp(ident,name)) { return type; }
+
+static int INITED_HEAP_ARRAY = 0;
 
 Compiler COMPILER_new() {
     Compiler compiler;
     FILE *fs = fopen(BUILDNAME, "w");
     compiler.file = fs;
+    compiler.contents = CONTENTS_new();
     return compiler;
 }
 void expr(Expression e) {}
+
+void init_heap_array() {
+
+}
 
 Contents token_string_parse(Expression* P_expr,int start) {
     Contents string = CONTENTS_new();
@@ -30,9 +38,10 @@ Contents token_string_parse(Expression* P_expr,int start) {
 }
 
 void write_print(Compiler* P_comp,Expression* P_expr,char* formatting) {
-    fprintf(P_comp->file, "printf(\"");
+    CONTENTS_append_str(&P_comp->contents, "printf(\"");
     Contents contents = token_string_parse(P_expr, 3);
-    fprintf(P_comp->file, "%s%s",contents.file,formatting);
+    CONTENTS_append_str(&P_comp->contents, contents.file);
+    CONTENTS_append_str(&P_comp->contents, formatting);
     free(contents.file);
     contents.file = NULL;
 }
@@ -48,7 +57,7 @@ IdentType get_ident_type(char *ident) {
     TOKEN_CMP(&ident[0], "$",IdentType_vartype);
     return IdentType_varname;
 }
-void variable_value_parse(int ident_token,Expression* P_expr,Compiler* P_comp) {
+void variable_value_parse(int ident_token,Expression* P_expr,Compiler* P_comp,char* var_type,char* var_name) {
     for (; ident_token < (P_expr->size)/sizeof(Token); ++ident_token) {
         Token value = P_expr->tokens[ident_token];
         switch (value.token_type) {
@@ -56,17 +65,34 @@ void variable_value_parse(int ident_token,Expression* P_expr,Compiler* P_comp) {
                 printf("");
                 Contents value_str = token_string_parse(P_expr, ident_token + 1);
                 printf("value str %s\n",value_str.file);
-                fprintf(P_comp->file, "= \"%s\"",value_str.file);
+                CONTENTS_append(&P_comp->contents, '"');
+                CONTENTS_append_str(&P_comp->contents, value_str.file);
+                CONTENTS_append(&P_comp->contents, '"');
                 free(value_str.file);
                 value_str.file = NULL;
                 return;
             case TokenType_Ident:
                 // TODO check if it is a function call
                 if (!strcmp(value.value, "NONE")) { break; }
-                if (!strcmp(value.value, "ref")) {  }
-                if (!strcmp(value.value, "@heap")) {  }
+                if (!strcmp(value.value, "ref")) { CONTENTS_append(&P_comp->contents,'&'); continue;  }
+                if (!strcmp(value.value, "@heap")) {
+                    CONTENTS_append_str(&P_comp->contents, "malloc(sizeof(");
+                    CONTENTS_append_str(&P_comp->contents, var_type);
+                    CONTENTS_append_str(&P_comp->contents, "));\n");
+                    if (!INITED_HEAP_ARRAY) {
+                        INITED_HEAP_ARRAY = 1;
+                        CONTENTS_append_str(&P_comp->contents,"__HeapArray ___heap = __HeapArrayNew();\n");
+                    }
+                    CONTENTS_append_str(&P_comp->contents,"__HeapArrayAppend(&___heap,(void*)");
+                    CONTENTS_append_str(&P_comp->contents,var_name);
+                    CONTENTS_append_str(&P_comp->contents,");\n");
+                    CONTENTS_append(&P_comp->contents,'*');
+                    CONTENTS_append_str(&P_comp->contents,var_name);
+                    CONTENTS_append(&P_comp->contents,'=');
+                    continue;
+                }
                 printf("var value %s\n",value.value);
-                fprintf(P_comp->file, "= %s",value.value);
+                CONTENTS_append_str(&P_comp->contents,value.value);
                 continue;
             default:
                 continue;
@@ -75,7 +101,8 @@ void variable_value_parse(int ident_token,Expression* P_expr,Compiler* P_comp) {
 }
 
 void COMPILER_parse(Compiler *P_comp,Expressions *P_exprs) {
-    fprintf(P_comp->file, "#include<stdio.h>\n#include<stdlib.h>\n int main(void) {\n");
+    fprintf(P_comp->file, "#include<stdio.h>\n#include<stdlib.h>\n");
+    CONTENTS_append_str(&P_comp->contents,"\nint main(void) {\n");
     for (int i = 0; i < (P_exprs->size/sizeof(Expression)); ++i) {
         uint e = P_exprs->exprs[i].size;
         Token token = P_exprs->exprs[i].tokens[0];
@@ -114,10 +141,12 @@ void COMPILER_parse(Compiler *P_comp,Expressions *P_exprs) {
                         }
                         ident_token += 2;
                         printf("index b %i\n",ident_token);
-                        fprintf(P_comp->file,"%s %s",type.value,name.value);
+                        CONTENTS_append_str(&P_comp->contents,type.value);
+                        CONTENTS_append_str(&P_comp->contents,name.value);
+                        CONTENTS_append(&P_comp->contents,'=');
                         // get the value of the variable
-                        variable_value_parse(ident_token, &P_exprs->exprs[i], P_comp);
-                        fprintf(P_comp->file,";\n");
+                        variable_value_parse(ident_token, &P_exprs->exprs[i], P_comp,type.value,name.value);
+                        CONTENTS_append_str(&P_comp->contents,";\n");
                         printf("%s %s\n",type.value,name.value);
                         continue;
                     default:
@@ -128,8 +157,17 @@ void COMPILER_parse(Compiler *P_comp,Expressions *P_exprs) {
                 continue;
         }
     }
-    fprintf(P_comp->file, "return 0; \n }");
+    CONTENTS_append_str(&P_comp->contents, "__HeapArrayDrop(___heap);\n");
+    CONTENTS_append_str(&P_comp->contents,"return 0; \n }");
+}
+void COMPILER_write_to_file(Compiler* P_comp) {
+    if (INITED_HEAP_ARRAY) {
+        fprintf(P_comp->file, "%s",HEAPARRAYCONTENTS);
+    }
+    fprintf(P_comp->file, "%s",P_comp->contents.file);
 }
 void COMPILER_drop(Compiler P_comp) {
+    printf("%s\n",P_comp.contents.file);
+    free(P_comp.contents.file);
     fclose(P_comp.file);
 }

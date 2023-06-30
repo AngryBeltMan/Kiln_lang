@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "parser.h"
+#include "contents.c"
 
 #ifndef COMPILER
 #define COMPILER
@@ -8,6 +9,8 @@
 typedef struct Compiler {
     // The file that is going to be written to.
     FILE *file;
+    Contents contents;
+
 } Compiler;
 typedef enum Module {
     MODULE_stdio,
@@ -29,6 +32,8 @@ void COMPILER_drop(Compiler comp);
 void COMPILER_include_module(Compiler *P_comp);
 
 void COMPILER_add_module(Compiler *P_comp, Module module);
+
+void COMPILER_write_to_file(Compiler *P_comp);
 
 IdentType get_ident_type(char*ident);
 
