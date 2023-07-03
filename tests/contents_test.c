@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include "contents.c"
+#include "../src/contents.c"
 
 int main() {
     Contents con = CONTENTS_new();

@@ -1,5 +1,5 @@
-#include "lib_tools.h"
-#include "lib_tools.c"
+#include "../src/lib_tools.h"
+#include "../src/lib_tools.c"
 #include <string.h>
 
 int main() {
@@ -13,7 +13,6 @@ int main() {
     char* wow = malloc(6);
     memmove(text, "hejkel", 6);
     VECTOR_append(&vec, wow);
-
     VECTOR_drop(vec);
     return 0;
 }
