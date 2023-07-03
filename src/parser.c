@@ -112,19 +112,37 @@ Expressions EXPRESSIONS_from_file(FILE *P_file) {
                 EXPRESSIONS_append(&exprs, expr);
                 expr = EXPRESSION_new();
                 continue;
-            TOKENMATCH('(', TokenType_LeftParenthesis)
-            TOKENMATCH(')', TokenType_RightParenthesis)
-            TOKENMATCH('"', TokenType_DoubleQuote)
-            TOKENMATCH('$', TokenType_DollarSign)
-            TOKENMATCH('=', TokenType_EqualSign)
-            TOKENMATCH(' ', TokenType_Space)
-            case '\n':
-                continue;
-            default:
-                identifier = 1;
+            case '}':
+                if (identifier == 1) {
+                    token.value = value.file;
+                    token.token_type = TokenType_Ident;
+                    EXP_APPEND(&expr, token);
+                    value = CONTENTS_new();
+                }
+                identifier = 0;
                 terminate = 0;
-                CONTENTS_append(&value,ch);
+                EXPRESSIONS_append(&exprs, expr);
+                token.value = NULL;
+                token.character = '}';
+                token.token_type = TokenType_RightBracket;
+                EXP_APPEND(&expr,token);
+                expr = EXPRESSION_new();
                 continue;
+                TOKENMATCH('(', TokenType_LeftParenthesis)
+                    TOKENMATCH(')', TokenType_RightParenthesis)
+                    TOKENMATCH('{', TokenType_LeftBracket)
+                    TOKENMATCH('"', TokenType_DoubleQuote)
+                    TOKENMATCH('$', TokenType_DollarSign)
+                    TOKENMATCH('@', TokenType_AtSign)
+                    TOKENMATCH('=', TokenType_EqualSign)
+                    TOKENMATCH(' ', TokenType_Space)
+            case '\n':
+                    continue;
+            default:
+                    identifier = 1;
+                    terminate = 0;
+                    CONTENTS_append(&value,ch);
+                    continue;
         }
     }
     for (int e = 0; e < expr.size/sizeof(Token); ++e) {
@@ -136,4 +154,19 @@ Expressions EXPRESSIONS_from_file(FILE *P_file) {
     if (value.file != NULL) { free(value.file); value.file = NULL; }
     if (expr.tokens != NULL) { free(expr.tokens); expr.tokens = NULL; }
     return exprs;
+}
+int EXPRESSION_token_exist(Expression *P_expr,int start,TokenType token) {
+    for (;start < (P_expr->size)/sizeof(Token);++start) {
+        if (P_expr->tokens[start].token_type == token) {
+            return start;
+        } else if (P_expr->tokens[start].token_type == TokenType_Space) {
+            printf("space skippin\n");
+            continue;
+        // this means it is not white space and a completly different token
+        } else {
+            printf("\n encountored %i ending\n",P_expr->tokens[start].token_type);
+            return -1;
+        }
+    }
+    return -1;
 }

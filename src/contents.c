@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -16,6 +17,7 @@ Contents CONTENTS_new() {
     con.size = 0;
     con.max = 8;
     con.file = malloc(8);
+    if (!con.file) { printf("ERROR: failed to malloc content %s\n",__FUNCTION__); }
     con.file[con.size]= '\0';
     return con;
 }
@@ -24,17 +26,53 @@ void CONTENTSappend(Contents *con,char c) {
     if (con->size + 2 > con->max) {
         con->max *= 2;
         con->file = realloc(con->file,con->max);
+        if (!con->file) { printf("ERROR: failed to realloc %s\n",__FUNCTION__); }
     }
     con->file[con->size] = c;
     con->file[con->size + 1]= '\0';
     con->size += 1;
 }
+
 void CONTENTS_append_str(Contents *con,char* string) {
     while (con->size + strlen(string) > con->max) {
         con->max *= 2;
         con->file = realloc(con->file,con->max);
+        if (!con->file) { printf("ERROR: failed to realloc %s\n",__FUNCTION__); }
     }
     strcat(con->file, string);
     con->size += strlen(string);
+}
+
+Contents CONTENTS_slice_range(Contents *P_con,uint start,uint end) {
+    Contents cont = CONTENTS_new();
+    for (;start <= end; ++start) {
+        CONTENTS_append(&cont, P_con->file[start]);
+    }
+    return cont;
+}
+Contents CONTENTS_from_char_slice_range(char *P_con,uint start,uint end) {
+    Contents cont = CONTENTS_new();
+    for (;start <= end; ++start) {
+        CONTENTS_append(&cont, P_con[start]);
+    }
+    return cont;
+}
+void CONTENTS_append_formated(Contents*P_con,const char *fmt, ...)
+{
+    va_list args;
+    size_t  len;
+    char   *space;
+
+    va_start(args, fmt);
+    len = vsnprintf(0, 0, fmt, args);
+    va_end(args);
+    if ((space = malloc(len + 1)) != 0)
+    {
+         va_start(args, fmt);
+         vsnprintf(space, len+1, fmt, args);
+         va_end(args);
+         CONTENTS_append_str(P_con,space);
+         free(space);
+    }
 }
 #endif

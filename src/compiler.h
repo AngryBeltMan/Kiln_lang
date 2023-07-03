@@ -1,24 +1,31 @@
 #include <stdio.h>
 #include "parser.h"
 #include "contents.c"
+#include "lib_tools.c"
+#include "lib_tools.h"
 
 #ifndef COMPILER
 #define COMPILER
+static int INITED_HEAP_ARRAY = 0;
 // Name for the build file.
 #define BUILDNAME "build.c"
-typedef struct Compiler {
-    // The file that is going to be written to.
-    FILE *file;
-    Contents contents;
-
-} Compiler;
 typedef enum Module {
     MODULE_stdio,
     MODULE_stdlib,
+    MODULE_string,
     // No OS required
     MODULE_math,
     MODULE_ctype,
 } Module;
+
+typedef struct Compiler {
+    // The file that is going to be written to.
+    FILE *file;
+    Contents contents;
+    /// vector of modules that will be included
+    Vector modules;
+
+} Compiler;
 
 // Creates a new compiler that will translate the kit file into a c file.
 Compiler COMPILER_new();
@@ -33,9 +40,13 @@ void COMPILER_include_module(Compiler *P_comp);
 
 void COMPILER_add_module(Compiler *P_comp, Module module);
 
+void COMPILER_add_modules(Compiler *P_comp);
+
 void COMPILER_write_to_file(Compiler *P_comp);
 
 IdentType get_ident_type(char*ident);
+
+Contents token_string_parse(Expression* P_expr,int start);
 
 #endif
 

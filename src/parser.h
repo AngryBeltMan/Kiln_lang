@@ -12,6 +12,7 @@ typedef enum TokenType {
     TokenType_DoubleQuote,
     TokenType_SingleQuote,
     TokenType_DollarSign,
+    TokenType_AtSign,
     TokenType_EqualSign,
     TokenType_Space,
 } TokenType;
@@ -42,6 +43,7 @@ typedef struct Expression {
 
 Expression EXPRESSION_new();
 void EXPRESSIONappend(Expression *P_expr, Token token);
+int EXPRESSION_token_exist(Expression *P_expr,int start,TokenType token);
 
 typedef struct Expressions {
     Expression* exprs;
@@ -51,5 +53,5 @@ typedef struct Expressions {
 
 Expressions EXPRESSIONS_new();
 void EXPRESSIONS_append(Expressions* P_exprs,Expression expr);
-void EXPRESSIONS_drop(Expressions P_exprs);
+void EXPRESSIONS_drop(Expressions exprs);
 #endif

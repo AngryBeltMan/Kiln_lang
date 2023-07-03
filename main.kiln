@@ -1,1 +1,5 @@
-let hello $int* = @heap 10;
+let hello $char* = @heap @size=10 "hello world";
+let cool $int* = @heap 2;
+let wow $char* = @heap @size=10 "hello world";
+let huh $char* = @heap @size=10 "hello world";
+println("hello world");
