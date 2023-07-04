@@ -1,5 +1,4 @@
-let hello $char* = @heap @size=10 "hello world";
-let cool $int* = @heap 2;
-let wow $char* = @heap @size=10 "hello world";
-let huh $char* = @heap @size=10 "hello world";
+for i $float 10 <- 290 {
 println("hello world");
+
+}

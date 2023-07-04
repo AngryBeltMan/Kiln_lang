@@ -10,9 +10,14 @@ typedef struct VarOpts {
     int size_mult;
     int string;
 } VarOpts;
+
 void variable_value_parse(int* ident_token,Expression* P_expr,Compiler* P_comp,VarOpts* P_varopts);
+
 VarOpts VAROPTS_expression_parse(Expression* P_expr, Compiler *P_comp);
+
 void VAROPTS_create_var(VarOpts varopts,Compiler* P_comp);
+
+char* get_var_ident(Expression* P_expr, int* index);
 
 // returns an incompleted Varopts struct
 VarOpts VAROPTS_new();

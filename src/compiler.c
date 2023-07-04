@@ -2,14 +2,22 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
+
 #include "compiler.h"
 #include "heap_array.h"
-#include "contents.c"
 #include "lib_tools.h"
+#include "parser.h"
+
 #include "lib_tools.c"
+#include "contents.c"
+
 #include "variables/variables.h"
 #include "variables/variables.c"
-#include "parser.h"
+#include "if_statements/if_statement.h"
+#include "if_statements/if_statement.c"
+#include "for_loop/forloop.h"
+#include "for_loop/forloop.c"
+
 #define TOKEN_CMP(ident,name,type) if (!strcmp(ident,name)) { return type; }
 
 void write_print(Compiler* P_comp,Expression* P_expr,char* formatting) {
@@ -57,9 +65,26 @@ void COMPILER_parse(Compiler *P_comp,Expressions *P_exprs) {
                         VarOpts varopts = VAROPTS_expression_parse(&P_exprs->exprs[i], P_comp);
                         VAROPTS_create_var(varopts, P_comp);
                         continue;
+                    case IdentType_if_statement:
+                        printf("");
+                        IfStatementOpt ifopts = IFSTATEMENT_parse(&P_exprs->exprs[i]);
+                        IFSTATEMENT_write_to_file(P_comp, ifopts);
+                        continue;
+                    case IdentType_for_loop:
+                        printf("");
+                        ForLoopOpt for_opts = FORLOOP_parse(&P_exprs->exprs[i]);
+                        FORLOOP_write_to_file(P_comp, for_opts);
+                        continue;
                     default:
+                        printf("other type %i\n",token.token_type);
                         continue;
                 }
+            case TokenType_RightBracket:
+                CONTENTS_append_str(&P_comp->contents, "}\n");
+                continue;
+            case TokenType_RightArrow:
+                printf("arrow\n");
+                continue;
             default:
                 continue;
         }
@@ -114,9 +139,9 @@ IdentType get_ident_type(char *ident) {
     TOKEN_CMP(ident, "fprint",IdentType_printf);
     TOKEN_CMP(ident, "fprintln",IdentType_printf);
     TOKEN_CMP(ident, "let",IdentType_var_init);
-    TOKEN_CMP(ident, "var",IdentType_varg_var);
-    TOKEN_CMP(ident, "ref",IdentType_varg_var);
-    TOKEN_CMP(&ident[0], "$",IdentType_vartype);
-    return IdentType_varname;
+    TOKEN_CMP(ident, "if",IdentType_if_statement);
+    TOKEN_CMP(ident, "for",IdentType_for_loop);
+    TOKEN_CMP(&ident[0], "}",IdentType_break_bracket);
+    return IdentType_var_name;
 }
 

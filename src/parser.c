@@ -5,6 +5,35 @@
 #include "contents.c"
 #ifndef TOKENMATCH
 #define EXP_APPEND(expr,token) /*printf("appended from fn: %s on line: %i\n",__FUNCTION__,__LINE__); */ EXPRESSIONappend(expr,token);
+#define TOKENMATCHEXIT(match_char,type) \
+    case match_char:\
+        if (identifier == 1) {\
+            token.value = value.file;\
+            token.token_type = TokenType_Ident;\
+            EXP_APPEND(&expr, token); \
+            value = CONTENTS_new();\
+        }\
+        identifier = 0;\
+        terminate = 0;\
+        EXPRESSIONS_append(&exprs, expr);\
+        token.value = NULL;\
+        token.character = match_char;\
+        token.token_type = type;\
+        EXP_APPEND(&expr,token);\
+        expr = EXPRESSION_new();\
+        continue;
+
+#define TOKENSTRMATCH(name,match_str,tokentype)\
+    if (!strcmp(name,match_str)) {\
+        token.value = name;\
+        token.token_type = tokentype;\
+        EXP_APPEND(&expr,token);\
+        value = CONTENTS_new(); \
+        identifier = 0; \
+        terminate = 0; \
+        double_char = 1; \
+    }
+
 
 #define TOKENMATCH(match_char,type)\
     case match_char:\
@@ -19,31 +48,31 @@ Expression EXPRESSION_new() {
     Expression tokens;
     tokens.size = 0;
     tokens.tokens = malloc(sizeof(Token));
+    if (tokens.tokens == NULL) {
+        printf("ERROR: failed to malloc expression %s\n",__FUNCTION__);
+    }
     tokens.max = sizeof(Token);
     return tokens;
 }
 void EXPRESSIONappend(Expression* P_expr,Token token) {
-    /* printf("type is now %i\n",token.token_type); */
-    /* printf("type value is %s\n",token.value); */
-    /* printf("----------------\n"); */
     if (P_expr->size + sizeof(Token) > P_expr->max) {
         P_expr->max *= 2;
         P_expr->tokens = realloc(P_expr->tokens,P_expr->max);
+        if (P_expr->tokens == NULL) { printf("ERROR: failed to realloc expression %s\n",__FUNCTION__); }
     }
     P_expr->tokens[(P_expr->size)/sizeof(Token)] = token;
     P_expr->size += sizeof(Token);
 }
 void EXPRESSION_insert_behind(Expression* P_expr,Token token) {
     Token current_token = P_expr->tokens[((P_expr->size)/sizeof(Token)) - 1];
-    /* printf("token %i\n",current_token.token_type); */
     P_expr->tokens[((P_expr->size)/sizeof(Token)) - 1] = token;
-    /* printf("inserting behind\n"); */
     EXP_APPEND(P_expr, current_token);
 }
 Expressions EXPRESSIONS_new() {
     Expressions exprs;
     exprs.size = 0;
     exprs.exprs = malloc(sizeof(Expression));
+    if (exprs.exprs == NULL) { printf("ERROR: failed to malloc expressions %s\n",__FUNCTION__); }
     exprs.max = sizeof(Expression);
     return exprs;
 }
@@ -52,6 +81,7 @@ void EXPRESSIONS_append(Expressions* P_exprs,Expression expr) {
     if (P_exprs->size + sizeof(Expression) > P_exprs->max) {
         P_exprs->max *= 2;
         P_exprs->exprs = realloc(P_exprs->exprs,P_exprs->max);
+        if (P_exprs->exprs == NULL) { printf("ERROR: failed to realloc expressions %s\n",__FUNCTION__); }
     }
     P_exprs->exprs[(P_exprs->size)/sizeof(Expression)] = expr;
     P_exprs->size += sizeof(Expression);
@@ -94,10 +124,15 @@ Expressions EXPRESSIONS_from_file(FILE *P_file) {
 
     while ((ch = fgetc(P_file)) != EOF /* End of file char*/) {
         if (terminate && identifier) {
-            Expression_add_context(&token, &expr, &value);
-            value = CONTENTS_new();
-            identifier = 0;
-            terminate = 0;
+            int double_char = 0;
+            TOKENSTRMATCH(value.file,"->",TokenType_RightArrow);
+            TOKENSTRMATCH(value.file,"<-",TokenType_LeftArrow);
+            if (double_char == 0) {
+                Expression_add_context(&token, &expr, &value);
+                value = CONTENTS_new();
+                identifier = 0;
+                terminate = 0;
+            }
         }
         switch ((char)ch) {
             case ';':
@@ -112,30 +147,15 @@ Expressions EXPRESSIONS_from_file(FILE *P_file) {
                 EXPRESSIONS_append(&exprs, expr);
                 expr = EXPRESSION_new();
                 continue;
-            case '}':
-                if (identifier == 1) {
-                    token.value = value.file;
-                    token.token_type = TokenType_Ident;
-                    EXP_APPEND(&expr, token);
-                    value = CONTENTS_new();
-                }
-                identifier = 0;
-                terminate = 0;
-                EXPRESSIONS_append(&exprs, expr);
-                token.value = NULL;
-                token.character = '}';
-                token.token_type = TokenType_RightBracket;
-                EXP_APPEND(&expr,token);
-                expr = EXPRESSION_new();
-                continue;
-                TOKENMATCH('(', TokenType_LeftParenthesis)
-                    TOKENMATCH(')', TokenType_RightParenthesis)
-                    TOKENMATCH('{', TokenType_LeftBracket)
-                    TOKENMATCH('"', TokenType_DoubleQuote)
-                    TOKENMATCH('$', TokenType_DollarSign)
-                    TOKENMATCH('@', TokenType_AtSign)
-                    TOKENMATCH('=', TokenType_EqualSign)
-                    TOKENMATCH(' ', TokenType_Space)
+            TOKENMATCHEXIT('}', TokenType_RightBracket)
+            TOKENMATCHEXIT('{', TokenType_LeftBracket)
+            TOKENMATCH('(', TokenType_LeftParenthesis)
+            TOKENMATCH(')', TokenType_RightParenthesis)
+            TOKENMATCH('"', TokenType_DoubleQuote)
+            TOKENMATCH('$', TokenType_DollarSign)
+            TOKENMATCH('@', TokenType_AtSign)
+            TOKENMATCH('=', TokenType_EqualSign)
+            TOKENMATCH(' ', TokenType_Space)
             case '\n':
                     continue;
             default:
