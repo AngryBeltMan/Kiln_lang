@@ -1,4 +1,2 @@
-for i $float 10 <- 290 {
-println("hello world");
-
-}
+let hello $char* = @heap @size=129 "hello world";
+let cool $char* = "9999";

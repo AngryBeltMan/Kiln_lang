@@ -1,0 +1,2 @@
+- fix for loops looping forever
+- resolve compile error when using multiple parentheses in an if statement

@@ -28,6 +28,7 @@ typedef enum IdentType {
     IdentType_var_name,
     IdentType_if_statement,
     IdentType_break_bracket,
+    IdentType_function,
     IdentType_for_loop,
 } IdentType;
 

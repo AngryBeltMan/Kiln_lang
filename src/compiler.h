@@ -44,7 +44,9 @@ void COMPILER_add_modules(Compiler *P_comp);
 
 void COMPILER_write_to_file(Compiler *P_comp);
 
-IdentType get_ident_type(char*ident);
+IdentType get_ident_type(char* ident);
+
+Contents token_parse_expression_until(Expression* P_expr, int start, TokenType end_token);
 
 Contents token_string_parse(Expression* P_expr,int start);
 

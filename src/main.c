@@ -15,9 +15,8 @@ int main(void) {
 
     Compiler comp = COMPILER_new();
 
+
     COMPILER_parse(&comp,&exprs);
-
-
     COMPILER_write_to_file(&comp);
 
     EXPRESSIONS_drop(exprs);

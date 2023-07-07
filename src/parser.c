@@ -21,7 +21,7 @@
         token.token_type = type;\
         EXP_APPEND(&expr,token);\
         expr = EXPRESSION_new();\
-        continue;
+        break;
 
 #define TOKENSTRMATCH(name,match_str,tokentype)\
     if (!strcmp(name,match_str)) {\
@@ -34,40 +34,59 @@
         double_char = 1; \
     }
 
+#define TOKENAPPEND(match_char,type)\
+    token.value = NULL;\
+    token.character = match_char;\
+    token.token_type = type;\
+    EXP_APPEND(&expr,token);
 
 #define TOKENMATCH(match_char,type)\
     case match_char:\
         terminate = 1;\
-        token.value = NULL;\
-        token.character = match_char;\
-        token.token_type = type;\
-        EXP_APPEND(&expr,token);\
-        continue;
+        CONTENTSCHECK();\
+        TOKENAPPEND(match_char, type);\
+        break;
+
+#define CONTENTSAPPEND() \
+    int double_char = 0;\
+    TOKENSTRMATCH(value.file,"->",TokenType_RightArrow);\
+    TOKENSTRMATCH(value.file,"<-",TokenType_LeftArrow);\
+    if (double_char == 0) {\
+        token.value = value.file;\
+        token.character = ' ';\
+        token.token_type = TokenType_Ident;\
+        EXPRESSIONappend(&expr,token);\
+        value = CONTENTS_new();\
+        identifier = 0;\
+        terminate = 0;\
+    }
+
+#define CONTENTSCHECK()\
+    if (identifier) {\
+        CONTENTSAPPEND()\
+    }
 #endif
+const int DROPPINGDEBUGINFO = 1;
 Expression EXPRESSION_new() {
     Expression tokens;
     tokens.size = 0;
     tokens.tokens = malloc(sizeof(Token));
-    if (tokens.tokens == NULL) {
-        printf("ERROR: failed to malloc expression %s\n",__FUNCTION__);
-    }
+    if (tokens.tokens == NULL) { printf("ERROR: failed to malloc expression %s\n",__FUNCTION__); }
     tokens.max = sizeof(Token);
     return tokens;
 }
+
 void EXPRESSIONappend(Expression* P_expr,Token token) {
     if (P_expr->size + sizeof(Token) > P_expr->max) {
         P_expr->max *= 2;
+        printf("realloc\n");
         P_expr->tokens = realloc(P_expr->tokens,P_expr->max);
         if (P_expr->tokens == NULL) { printf("ERROR: failed to realloc expression %s\n",__FUNCTION__); }
     }
     P_expr->tokens[(P_expr->size)/sizeof(Token)] = token;
     P_expr->size += sizeof(Token);
 }
-void EXPRESSION_insert_behind(Expression* P_expr,Token token) {
-    Token current_token = P_expr->tokens[((P_expr->size)/sizeof(Token)) - 1];
-    P_expr->tokens[((P_expr->size)/sizeof(Token)) - 1] = token;
-    EXP_APPEND(P_expr, current_token);
-}
+
 Expressions EXPRESSIONS_new() {
     Expressions exprs;
     exprs.size = 0;
@@ -76,6 +95,7 @@ Expressions EXPRESSIONS_new() {
     exprs.max = sizeof(Expression);
     return exprs;
 }
+
 void EXPRESSIONS_append(Expressions* P_exprs,Expression expr) {
     if (P_exprs == NULL) {return;}
     if (P_exprs->size + sizeof(Expression) > P_exprs->max) {
@@ -91,9 +111,11 @@ void EXPRESSIONS_drop(Expressions exprs) {
     for (int expr = 0;expr < (exprs.size/sizeof(Expression)); ++expr) {
         for (int token = 0; token < (exprs.exprs[expr].size/sizeof(Token));++token) {
             if (exprs.exprs[expr].tokens[token].value != NULL) {
-                printf("dropping %s \n",exprs.exprs[expr].tokens[token].value);
+                if (DROPPINGDEBUGINFO) { printf("dropping %s \n",exprs.exprs[expr].tokens[token].value); }
                 free(exprs.exprs[expr].tokens[token].value);
                 exprs.exprs[expr].tokens[token].value = NULL;
+            } else {
+                if (DROPPINGDEBUGINFO) { printf("dropping '%c'\n",exprs.exprs[expr].tokens[token].character); }
             }
         }
         if (exprs.exprs[expr].tokens) {
@@ -106,11 +128,7 @@ void EXPRESSIONS_drop(Expressions exprs) {
         exprs.exprs = NULL;
     }
 }
-void Expression_add_context(Token* P_token,Expression*P_expr,Contents* P_value) {
-    P_token->value = P_value->file;
-    P_token->token_type = TokenType_Ident;
-    EXPRESSION_insert_behind(P_expr, *P_token);
-}
+
 Expressions EXPRESSIONS_from_file(FILE *P_file) {
     int ch;
     Contents value = CONTENTS_new();
@@ -121,20 +139,14 @@ Expressions EXPRESSIONS_from_file(FILE *P_file) {
 
     int terminate = 0;
     int identifier = 0;
+    // will decide whether or not to parse or ignore the spaces
+    int containers_count = 0;
+    int open_quote = 0;
 
     while ((ch = fgetc(P_file)) != EOF /* End of file char*/) {
-        if (terminate && identifier) {
-            int double_char = 0;
-            TOKENSTRMATCH(value.file,"->",TokenType_RightArrow);
-            TOKENSTRMATCH(value.file,"<-",TokenType_LeftArrow);
-            if (double_char == 0) {
-                Expression_add_context(&token, &expr, &value);
-                value = CONTENTS_new();
-                identifier = 0;
-                terminate = 0;
-            }
-        }
         switch ((char)ch) {
+            case '\n':
+                break;
             case ';':
                 if (identifier == 1) {
                     token.value = value.file;
@@ -146,24 +158,40 @@ Expressions EXPRESSIONS_from_file(FILE *P_file) {
                 terminate = 0;
                 EXPRESSIONS_append(&exprs, expr);
                 expr = EXPRESSION_new();
-                continue;
+                break;
+            case '"':
+                terminate = 1;
+                CONTENTSCHECK();
+                if (open_quote) { --containers_count; } else {++containers_count;}
+                open_quote = !open_quote;
+                TOKENAPPEND('"',TokenType_DoubleQuote);
+                break;
+            case ' ':
+                terminate = 1;
+                printf("space");
+                CONTENTSCHECK();
+                if (containers_count == 0) { break; }
+                TOKENAPPEND(' ',TokenType_Space);
+                break;
             TOKENMATCHEXIT('}', TokenType_RightBracket)
             TOKENMATCHEXIT('{', TokenType_LeftBracket)
             TOKENMATCH('(', TokenType_LeftParenthesis)
             TOKENMATCH(')', TokenType_RightParenthesis)
-            TOKENMATCH('"', TokenType_DoubleQuote)
             TOKENMATCH('$', TokenType_DollarSign)
             TOKENMATCH('@', TokenType_AtSign)
             TOKENMATCH('=', TokenType_EqualSign)
-            TOKENMATCH(' ', TokenType_Space)
-            case '\n':
-                    continue;
             default:
-                    identifier = 1;
-                    terminate = 0;
-                    CONTENTS_append(&value,ch);
-                    continue;
+                printf("default\n");
+                identifier = 1;
+                terminate = 0;
+                CONTENTS_append(&value,ch);
+                break;
         }
+        printf("\n");
+        /* printf("%s\n",(terminate && identifier) ? "breaking": "cont"); */
+        /* if (terminate + identifier == 2) { */
+        /*     CONTENTSAPPEND(); */
+        /* } */
     }
     for (int e = 0; e < expr.size/sizeof(Token); ++e) {
         if (expr.tokens[e].value) {
@@ -176,17 +204,25 @@ Expressions EXPRESSIONS_from_file(FILE *P_file) {
     return exprs;
 }
 int EXPRESSION_token_exist(Expression *P_expr,int start,TokenType token) {
-    for (;start < (P_expr->size)/sizeof(Token);++start) {
+    printf("length %i\n",(int)((P_expr->size)/sizeof(Token)));
+    printf("index %i\n",start);
+    for (;start < ((P_expr->size)/sizeof(Token));++start) {
         if (P_expr->tokens[start].token_type == token) {
+            printf("match %i\n",P_expr->tokens[start].token_type);
+            printf("token %i\n",token);
+            printf("index %i\n",start);
             return start;
         } else if (P_expr->tokens[start].token_type == TokenType_Space) {
-            printf("space skippin\n");
             continue;
         // this means it is not white space and a completly different token
         } else {
-            printf("\n encountored %i ending\n",P_expr->tokens[start].token_type);
+            printf("got this token instead %i\n",P_expr->tokens[start].token_type);
+            if (P_expr->tokens[start].token_type == 0) {
+                printf("value is %s\n",P_expr->tokens[start].value );
+            }
             return -1;
         }
     }
+    printf("quitting\n");
     return -1;
 }
