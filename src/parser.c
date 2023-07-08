@@ -5,6 +5,9 @@
 #include "contents.c"
 #ifndef TOKENMATCH
 #define EXP_APPEND(expr,token) /*printf("appended from fn: %s on line: %i\n",__FUNCTION__,__LINE__); */ EXPRESSIONappend(expr,token);
+
+void options_check(int open_char_count,char* value);
+
 #define TOKENMATCHEXIT(match_char,type) \
     case match_char:\
         if (identifier == 1) {\
@@ -14,12 +17,13 @@
             value = CONTENTS_new();\
         }\
         identifier = 0;\
-        terminate = 0;\
-        EXPRESSIONS_append(&exprs, expr);\
+        containers_count = 0;\
+        open_quote = 0;\
         token.value = NULL;\
         token.character = match_char;\
         token.token_type = type;\
         EXP_APPEND(&expr,token);\
+        EXPRESSIONS_append(&exprs, expr);\
         expr = EXPRESSION_new();\
         break;
 
@@ -30,7 +34,6 @@
         EXP_APPEND(&expr,token);\
         value = CONTENTS_new(); \
         identifier = 0; \
-        terminate = 0; \
         double_char = 1; \
     }
 
@@ -42,23 +45,24 @@
 
 #define TOKENMATCH(match_char,type)\
     case match_char:\
-        terminate = 1;\
         CONTENTSCHECK();\
         TOKENAPPEND(match_char, type);\
         break;
 
 #define CONTENTSAPPEND() \
     int double_char = 0;\
+    /* Token str match with set double char to one if they match with the second argument*/ \
     TOKENSTRMATCH(value.file,"->",TokenType_RightArrow);\
     TOKENSTRMATCH(value.file,"<-",TokenType_LeftArrow);\
+    /*Only append the ident if it doesn't match with the any of the TOKENSTRMATCH*/ \
     if (double_char == 0) {\
+        options_check(containers_count, value.file);\
         token.value = value.file;\
         token.character = ' ';\
         token.token_type = TokenType_Ident;\
         EXPRESSIONappend(&expr,token);\
         value = CONTENTS_new();\
         identifier = 0;\
-        terminate = 0;\
     }
 
 #define CONTENTSCHECK()\
@@ -67,6 +71,14 @@
     }
 #endif
 const int DROPPINGDEBUGINFO = 1;
+
+void options_check(int open_char_count,char* value) {
+    if (open_char_count == 0) {
+        if (!strcmp(value, "heap")) {
+            INITED_HEAP_ARRAY = 1;
+        }
+    }
+}
 Expression EXPRESSION_new() {
     Expression tokens;
     tokens.size = 0;
@@ -137,7 +149,6 @@ Expressions EXPRESSIONS_from_file(FILE *P_file) {
     Token token;
     token.value = NULL;
 
-    int terminate = 0;
     int identifier = 0;
     // will decide whether or not to parse or ignore the spaces
     int containers_count = 0;
@@ -146,6 +157,7 @@ Expressions EXPRESSIONS_from_file(FILE *P_file) {
     while ((ch = fgetc(P_file)) != EOF /* End of file char*/) {
         switch ((char)ch) {
             case '\n':
+                CONTENTSCHECK();
                 break;
             case ';':
                 if (identifier == 1) {
@@ -155,43 +167,40 @@ Expressions EXPRESSIONS_from_file(FILE *P_file) {
                     value = CONTENTS_new();
                 }
                 identifier = 0;
-                terminate = 0;
                 EXPRESSIONS_append(&exprs, expr);
                 expr = EXPRESSION_new();
                 break;
             case '"':
-                terminate = 1;
                 CONTENTSCHECK();
                 if (open_quote) { --containers_count; } else {++containers_count;}
                 open_quote = !open_quote;
                 TOKENAPPEND('"',TokenType_DoubleQuote);
                 break;
+            case '(':
+                CONTENTSCHECK();
+                ++containers_count;
+                TOKENAPPEND('(',TokenType_LeftParenthesis);
+                break;
+            case ')':
+                CONTENTSCHECK();
+                --containers_count;
+                TOKENAPPEND(')',TokenType_RightParenthesis);
+                break;
             case ' ':
-                terminate = 1;
-                printf("space");
                 CONTENTSCHECK();
                 if (containers_count == 0) { break; }
                 TOKENAPPEND(' ',TokenType_Space);
                 break;
             TOKENMATCHEXIT('}', TokenType_RightBracket)
             TOKENMATCHEXIT('{', TokenType_LeftBracket)
-            TOKENMATCH('(', TokenType_LeftParenthesis)
-            TOKENMATCH(')', TokenType_RightParenthesis)
             TOKENMATCH('$', TokenType_DollarSign)
             TOKENMATCH('@', TokenType_AtSign)
             TOKENMATCH('=', TokenType_EqualSign)
             default:
-                printf("default\n");
                 identifier = 1;
-                terminate = 0;
                 CONTENTS_append(&value,ch);
                 break;
         }
-        printf("\n");
-        /* printf("%s\n",(terminate && identifier) ? "breaking": "cont"); */
-        /* if (terminate + identifier == 2) { */
-        /*     CONTENTSAPPEND(); */
-        /* } */
     }
     for (int e = 0; e < expr.size/sizeof(Token); ++e) {
         if (expr.tokens[e].value) {
@@ -204,25 +213,15 @@ Expressions EXPRESSIONS_from_file(FILE *P_file) {
     return exprs;
 }
 int EXPRESSION_token_exist(Expression *P_expr,int start,TokenType token) {
-    printf("length %i\n",(int)((P_expr->size)/sizeof(Token)));
-    printf("index %i\n",start);
     for (;start < ((P_expr->size)/sizeof(Token));++start) {
         if (P_expr->tokens[start].token_type == token) {
-            printf("match %i\n",P_expr->tokens[start].token_type);
-            printf("token %i\n",token);
-            printf("index %i\n",start);
             return start;
         } else if (P_expr->tokens[start].token_type == TokenType_Space) {
             continue;
         // this means it is not white space and a completly different token
         } else {
-            printf("got this token instead %i\n",P_expr->tokens[start].token_type);
-            if (P_expr->tokens[start].token_type == 0) {
-                printf("value is %s\n",P_expr->tokens[start].value );
-            }
             return -1;
         }
     }
-    printf("quitting\n");
     return -1;
 }

@@ -7,6 +7,7 @@ typedef enum FuncType {
     FUNCTYPE_None,
     FUNCTYPE_method,
     FUNCTYPE_function,
+    FUNCTYPE_main
 } FuncType;
 
 typedef union FuncArgs {

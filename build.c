@@ -1,4 +1,5 @@
 #include<stdlib.h>
+#include<stdio.h>
 #include<string.h>
 typedef struct __HeapArray {
  void** _vars; uint _max; uint _size;
@@ -23,13 +24,19 @@ void __HeapArrayAppend( __HeapArray* heap_array, void* value_ref) {
  free(heap_array._vars[i]); 
 heap_array._vars[i] = NULL; 
 } free(heap_array._vars);
- } 
-int main(void) {
+ }
+char* hello() {
+printf("hello world\n");
+}
+int __MAIN( __HeapArray *___heap) {
+char* hello = malloc(sizeof(char) * 4);
+__HeapArrayAppend(___heap, hello);
+strcpy(hello,"wha");
+}
+
+int main() {
 __HeapArray ___heap = __HeapArrayNew();
-char* hello = malloc(sizeof(char) * 129);
-__HeapArrayAppend(&___heap, hello);
-strcpy(hello,"hello world");
-char* cool = "9999";
+__MAIN(&___heap);
 __HeapArrayDrop(___heap);
 return 0; 
  }

@@ -53,7 +53,6 @@ Compiler COMPILER_new() {
 }
 
 void COMPILER_parse(Compiler *P_comp, Expressions *P_exprs) {
-    CONTENTS_append_str(&P_comp->contents, "\nint main(void) {\n");
     for (int i = 0; i < (P_exprs->size / sizeof(Expression)); ++i) {
         uint e = P_exprs->exprs[i].size;
         uint token_index = 0;
@@ -66,7 +65,6 @@ void COMPILER_parse(Compiler *P_comp, Expressions *P_exprs) {
                 CONTENTS_append_str(&P_comp->contents, "}\n");
                 continue;
             case TokenType_RightArrow:
-                printf("arrow\n");
                 continue;
             case TokenType_AtSign:
                 printf("");
@@ -77,11 +75,6 @@ void COMPILER_parse(Compiler *P_comp, Expressions *P_exprs) {
                 continue;
         }
     }
-    if (INITED_HEAP_ARRAY) {
-        CONTENTS_append_str(&P_comp->contents, "__HeapArrayDrop(___heap);\n");
-    }
-
-    CONTENTS_append_str(&P_comp->contents, "return 0; \n }");
 }
 void parse_expression_from_keyword(IdentType ident_type, Compiler *P_comp, Expressions *P_exprs, int index) {
 
@@ -135,10 +128,17 @@ void COMPILER_write_to_file(Compiler *P_comp) {
                 continue;
         }
     }
-    if (INITED_HEAP_ARRAY) {
-        fprintf(P_comp->file, "%s", HEAPARRAYCONTENTS);
-    }
+    if (INITED_HEAP_ARRAY) { fprintf(P_comp->file, "%s", HEAPARRAYCONTENTS); }
+
     fprintf(P_comp->file, "%s", P_comp->contents.file);
+
+    fprintf(P_comp->file,"\nint main() {\n");
+
+    fprintf(P_comp->file, "__HeapArray ___heap = __HeapArrayNew();\n");
+    // adds the heap array argument to the main function if it INITED_HEAP_ARRAY is true
+    fprintf(P_comp->file,"__MAIN(%s);\n",INITED_HEAP_ARRAY ? "&___heap":"");
+    if (INITED_HEAP_ARRAY) { fprintf(P_comp->file, "__HeapArrayDrop(___heap);\n"); }
+    fprintf(P_comp->file, "return 0; \n }");
 }
 
 void COMPILER_drop(Compiler P_comp) {

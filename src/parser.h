@@ -2,6 +2,8 @@
 #include <sys/types.h>
 #ifndef TOKENS
 #define TOKENS
+// setting vars
+static int INITED_HEAP_ARRAY = 0;
 
 typedef enum TokenType {
     TokenType_Ident,

@@ -6,7 +6,6 @@
 
 #ifndef COMPILER
 #define COMPILER
-static int INITED_HEAP_ARRAY = 0;
 // Name for the build file.
 #define BUILDNAME "build.c"
 typedef enum Module {

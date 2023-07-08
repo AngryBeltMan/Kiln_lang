@@ -20,7 +20,7 @@ void VAROPTS_create_var(VarOpts varopts,Compiler *P_comp) {
         Contents type = CONTENTS_from_char_slice_range(varopts.type,0,strlen(varopts.type)-2);
         CONTENTS_append_formated(&P_comp->contents,"%s %s = malloc(sizeof(%s) * %i);\n",varopts.type,varopts.name,type.file,varopts.size_mult);
         free(type.file);
-        CONTENTS_append_formated(&P_comp->contents, "__HeapArrayAppend(&___heap, %s);\n",varopts.name);
+        CONTENTS_append_formated(&P_comp->contents, "__HeapArrayAppend(___heap, %s);\n",varopts.name);
         if (varopts.string) {
             COMPILER_add_module(P_comp, MODULE_string);
             printf("varopt value %s\n",varopts.value);
@@ -93,7 +93,6 @@ void variable_value_parse(int* ident_token,Expression* P_expr,Compiler* P_comp, 
                     varopts->heap_allocated = 1;
                     if (!INITED_HEAP_ARRAY) {
                         INITED_HEAP_ARRAY = 1;
-                        CONTENTS_append_str(&P_comp->contents,"__HeapArray ___heap = __HeapArrayNew();\n");
                     }
                     /* CONTENTS_append_formated(&P_comp->contents, "*%s=",var_name); */
 
