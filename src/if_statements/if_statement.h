@@ -1,5 +1,5 @@
 #ifndef IFSTATEMENT
-#include "../compiler.h"
+#include "../compiler/compiler.h"
 #include "../parser/parser.h"
 #define IFSTATEMENT
 

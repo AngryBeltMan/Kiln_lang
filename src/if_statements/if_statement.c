@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #ifdef IFSTATEMENT
 #ifndef IFSTATEMENTIMPL
-#include "../compiler.h"
+#include "../compiler/compiler.h"
 #include "../parser/parser.h"
 #include "../contents.c"
 #define IFSTATEMENTIMPL

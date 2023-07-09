@@ -1,21 +1,13 @@
 #include <stdio.h>
-#include "parser/parser.h"
-#include "contents.c"
-#include "lib_tools.c"
-#include "lib_tools.h"
+#include "../parser/parser.h"
+#include "../contents.c"
+#include "../lib_tools.c"
+#include "../lib_tools.h"
 
 #ifndef COMPILER
 #define COMPILER
 // Name for the build file.
 #define BUILDNAME "build.c"
-typedef enum Module {
-    MODULE_stdio,
-    MODULE_stdlib,
-    MODULE_string,
-    // No OS required
-    MODULE_math,
-    MODULE_ctype,
-} Module;
 
 typedef struct Compiler {
     // The file that is going to be written to.
@@ -34,12 +26,6 @@ void COMPILER_parse(Compiler* P_comp,Expressions *P_exprs);
 
 // frees all of the heap memory held in the compiler
 void COMPILER_drop(Compiler comp);
-
-void COMPILER_include_module(Compiler *P_comp);
-
-void COMPILER_add_module(Compiler *P_comp, Module module);
-
-void COMPILER_add_modules(Compiler *P_comp);
 
 void COMPILER_write_to_file(Compiler *P_comp);
 

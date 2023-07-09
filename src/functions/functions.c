@@ -5,7 +5,7 @@
 #include <string.h>
 #ifndef FUNCTIONSIMPL
 #define FUNCTIONSIMPL
-#include "../compiler.h"
+#include "../compiler/compiler.h"
 #include "../parser/parser.h"
 #include "../variables/variables.h"
 

@@ -1,6 +1,6 @@
 #ifndef CALLS
 #define CALLS
-#include "../compiler.h"
+#include "../compiler/compiler.h"
 typedef enum Arithmetic {
     ARITHMETIC_addition,
     ARITHMETIC_subtraction,

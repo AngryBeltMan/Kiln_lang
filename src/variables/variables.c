@@ -1,6 +1,8 @@
-#include "../compiler.h"
+#include "../compiler/compiler.h"
 #include "../lib_tools.h"
 #include "../contents.c"
+#include "../compiler/modules.h"
+#include "../compiler/modules.c"
 #include "variables.h"
 #include <assert.h>
 #include <stdio.h>

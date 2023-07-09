@@ -1,7 +1,7 @@
 #include "calls.h"
 #include <stdio.h>
 #ifndef CALLDEF
-#include "../compiler.h"
+#include "../compiler/compiler.h"
 #include "../contents.c"
 
 CallsType CALLSTYPE_parse(Expression *P_expr, int start_index) {

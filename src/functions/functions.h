@@ -1,6 +1,6 @@
 #ifndef FUNCTIONS
 #define FUNCTIONS
-#include "../compiler.h"
+#include "../compiler/compiler.h"
 #include "../parser/parser.h"
 
 typedef enum FuncType {

@@ -5,8 +5,8 @@
 #include "contents.c"
 #include "parser/parser.h"
 #include "parser/parser.c"
-#include "compiler.h"
-#include "compiler.c"
+#include "compiler/compiler.h"
+#include "compiler/compiler.c"
 int main(void) {
     FILE *main_file;
     main_file = fopen("main.kiln", "r");

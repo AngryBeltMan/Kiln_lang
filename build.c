@@ -13,7 +13,6 @@ printf("hello world\n");
 }
 
 int main() {
-__HeapArray ___heap = __HeapArrayNew();
 __MAIN( );
 return 0;
  }

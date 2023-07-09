@@ -15,8 +15,8 @@ typedef struct Contents {
 Contents CONTENTS_new() {
     Contents con;
     con.size = 0;
-    con.max = 8;
-    con.file = malloc(8);
+    con.max = 16;
+    con.file = malloc(16);
     if (!con.file) { printf("ERROR: failed to malloc content %s\n",__FUNCTION__); }
     con.file[con.size]= '\0';
     return con;
