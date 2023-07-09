@@ -1,3 +1,11 @@
+@return=int
+func hello() {
+    ret 0;
+}
+
 @main
-func fjdk() {
+func main() {
+    for i $int 0 -> 10 {
+
+    }
 }

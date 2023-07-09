@@ -4,7 +4,7 @@
 
 #include "settings.h"
 #ifndef SETTINGS_IMPL
-#include "parser.h"
+#include "parser/parser.h"
 #include "compiler.h"
 
 IdentType SETTINGS_get_identtype(Expression *P_expr) {

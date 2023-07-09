@@ -13,11 +13,15 @@ VarOpts VAROPTS_new() {
     varopts.type = NULL;
     varopts.size_mult = 1;
     varopts.heap_allocated = 0;
+    varopts.const_val = 0;
+    varopts.static_val = 0;
     varopts.string = 0;
     return varopts;
 }
 
 void VAROPTS_create_var(VarOpts varopts,Compiler *P_comp) {
+    CONTENTS_append_str(&P_comp->contents,(varopts.static_val) ? "static " : "");
+    CONTENTS_append_str(&P_comp->contents,(varopts.const_val) ? "const  " : "");
     if (varopts.heap_allocated) {
         Contents type = CONTENTS_from_char_slice_range(varopts.type,0,strlen(varopts.type)-2);
         CONTENTS_append_formated(&P_comp->contents,"%s %s = malloc(sizeof(%s) * %i);\n",varopts.type,varopts.name,type.file,varopts.size_mult);
@@ -79,32 +83,30 @@ void variable_value_parse(int* ident_token,Expression* P_expr,Compiler* P_comp, 
     for (; *ident_token < (P_expr->size)/sizeof(Token); ++*ident_token) {
         Token value = P_expr->tokens[*ident_token];
         switch (value.token_type) {
-            case TokenType_DoubleQuote:
-                printf("");
+            case TokenType_DoubleQuote: {
                 Contents str = token_string_parse(P_expr, *ident_token + 1);
                 varopts->string = 1;
                 CONTENTS_append_formated(&var_value, "\"%s\"",str);
                 varopts->value = var_value.file;
                 free(str.file);
                 return;
-            case TokenType_AtSign:
-                printf("index %i\n",*ident_token);
-                printf("setting var name %s\n",P_expr->tokens[*ident_token+1].value);
-                printf("setting var value %s\n",P_expr->tokens[*ident_token+2].value);
+            }
+            case TokenType_AtSign: {
                 if (!strcmp(P_expr->tokens[*ident_token+1].value, "heap")) {
                     varopts->heap_allocated = 1;
-                    if (!INITED_HEAP_ARRAY) {
-                        INITED_HEAP_ARRAY = 1;
-                    }
-                    /* CONTENTS_append_formated(&P_comp->contents, "*%s=",var_name); */
-
                 } else if (!strcmp(P_expr->tokens[*ident_token+1].value, "size")) {
                     char* setting_value = parse_setting_var(P_expr, ident_token);
                     assert(setting_value != NULL && "ERROR: could not parse @size");
                     varopts->size_mult = str_to_int(setting_value);
+                } else if (!strcmp(P_expr->tokens[*ident_token+1].value, "const")) {
+                    varopts->const_val = 1;
+                } else if (!strcmp(P_expr->tokens[*ident_token+1].value, "static")) {
+                    varopts->static_val = 1;
                 }
+                printf("ERROR: unknown setting value\n");
                 continue;
-            case TokenType_Ident:
+            }
+            case TokenType_Ident: {
                 // TODO check if it is a function call
                 if (!strcmp(value.value, "NONE")) {
                     free(var_value.file);
@@ -114,8 +116,11 @@ void variable_value_parse(int* ident_token,Expression* P_expr,Compiler* P_comp, 
                 if (!strcmp(value.value, "ref")) { CONTENTS_append(&var_value,'&'); continue;  }
                 if (!strcmp(value.value, "heap")) { continue; }
                 if (!strcmp(value.value, "size")) { continue; }
+                if (!strcmp(value.value, "const")) { continue; }
+                if (!strcmp(value.value, "static")) { continue; }
                 CONTENTS_append_str(&var_value,value.value);
                 continue;
+            }
             default:
                 printf("other %i\n",value.token_type);
                 break;

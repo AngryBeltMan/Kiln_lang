@@ -4,7 +4,7 @@
 #ifdef IFSTATEMENT
 #ifndef IFSTATEMENTIMPL
 #include "../compiler.h"
-#include "../parser.h"
+#include "../parser/parser.h"
 #include "../contents.c"
 #define IFSTATEMENTIMPL
 

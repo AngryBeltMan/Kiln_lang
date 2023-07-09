@@ -3,8 +3,8 @@
 #include <string.h>
 #include <sys/types.h>
 #include "contents.c"
-#include "parser.h"
-#include "parser.c"
+#include "parser/parser.h"
+#include "parser/parser.c"
 #include "compiler.h"
 #include "compiler.c"
 int main(void) {

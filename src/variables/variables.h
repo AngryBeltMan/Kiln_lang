@@ -7,6 +7,8 @@ typedef struct VarOpts {
     char* type;
     char* value;
     int heap_allocated;
+    int const_val;
+    int static_val;
     int size_mult;
     int string;
 } VarOpts;

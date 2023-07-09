@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "parser.h"
-#include "contents.c"
+#include "../contents.c"
 #ifndef TOKENMATCH
 #define EXP_APPEND(expr,token) /*printf("appended from fn: %s on line: %i\n",__FUNCTION__,__LINE__); */ EXPRESSIONappend(expr,token);
 

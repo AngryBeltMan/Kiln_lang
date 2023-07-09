@@ -4,6 +4,7 @@
 #include "../variables/variables.h"
 #include "../lib_tools.h"
 #include "../contents.c"
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -22,23 +23,15 @@ ForLoopOpt FORLOOP_parse(Expression *P_expr) {
     ForLoopOpt forloopopt = FORLOOP_new();
     VarOpts var_opt = VAROPTS_new();
 
-    int forloop_index = 2;
-    char* name = get_var_ident(P_expr, &forloop_index);
+    char* name = P_expr->tokens[1].value;
     if (name == NULL) { name = "_i"; }
-    ++forloop_index;
-    char* type = get_var_ident(P_expr, &forloop_index);
+    char* type = P_expr->tokens[3].value;
     if (type == NULL) { type = "int"; }
-    ++forloop_index;
-    char* start = get_var_ident(P_expr, &forloop_index);
-    if (start == NULL) { printf("ERROR: for loop left hand side value not given %s\n",__FUNCTION__); abort(); }
-    ++forloop_index;
-    int skip = 0;
-    if (EXPRESSION_token_exist(P_expr, forloop_index,TokenType_RightArrow) != -1) { skip = 1; }
-    if (EXPRESSION_token_exist(P_expr, forloop_index,TokenType_LeftArrow) != -1) { skip = -1; }
-    if (skip == 0) { printf("Error: could not find arrow %s\n",__FUNCTION__); }
-    char* end = get_var_ident(P_expr, &forloop_index);
-    if (end == NULL) { printf("ERROR: for loop right hand side value not given %s\n",__FUNCTION__); abort(); }
-    printf("end = %s\n",end);
+    char* start = P_expr->tokens[4].value;
+    assert(start != NULL && "ERROR: for loop left hand side value not given %s\n");
+    int skip = ((EXPRESSION_token_exist(P_expr, 5,TokenType_RightArrow) != -1) ? 1 : -1);
+    char* end = P_expr->tokens[6].value;
+    assert(end != NULL && "ERROR: for loop right hand side value not given");
     var_opt.name = name;
     var_opt.type = type;
     forloopopt.start = str_to_int(start);

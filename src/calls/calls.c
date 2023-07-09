@@ -16,9 +16,9 @@ CallsType CALLSTYPE_parse(Expression *P_expr, int start_index) {
             char* func_name = P_expr->tokens[start_index].value;
             printf("function name %s\n",func_name);
             // gets the function arguments
-            Contents args = token_parse_expression_until(P_expr, start_index + 2,
-                    TokenType_RightParenthesis);
-            call_type.Type.FnCall.args =args.file;
+            Contents args = token_parse_expression_until(P_expr, start_index + 2, TokenType_RightParenthesis);
+            if (args.size == 0) { CONTENTS_append(&args,' '); }
+            call_type.Type.FnCall.args = args.file;
             printf("function arg\n");
             call_type.Type.FnCall.fn_name = func_name;
             call_type.CallTypeArm = CALLTYPEARM_fn_call;
@@ -27,7 +27,7 @@ CallsType CALLSTYPE_parse(Expression *P_expr, int start_index) {
         case TokenType_EqualSign: {
             call_type.CallTypeArm = CALLTYPEARM_var_assign;
             call_type.Type.VarAssign.var_name = P_expr->tokens[start_index].value;
-            call_type.Type.VarAssign.value = malloc(8);
+            call_type.Type.VarAssign.value = malloc(24);
             *call_type.Type.VarAssign.value = CALLSTYPE_parse(P_expr, start_index + 2);
             break;
         }

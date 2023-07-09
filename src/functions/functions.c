@@ -6,7 +6,7 @@
 #ifndef FUNCTIONSIMPL
 #define FUNCTIONSIMPL
 #include "../compiler.h"
-#include "../parser.h"
+#include "../parser/parser.h"
 #include "../variables/variables.h"
 
 FuncOpt FUNCTION_new() {
@@ -72,23 +72,27 @@ FuncOpt FUNCTION_parse(Expression *P_expr) {
     // continue to parse all of the tokens after the left parenthesis up until a
     // right parenthesis is encountered
     ++func_index;
-    Contents args = token_parse_expression_until(P_expr, func_index,
-            TokenType_RightParenthesis);
+    Contents args = token_parse_expression_until(P_expr, func_index, TokenType_RightParenthesis);
+    // if there is no arguments add void
+    // this is done so the args value is atleast initialized
+    if (args.size == 0) { CONTENTS_append_str(&args,"void"); }
+
 
     // add all of the function data in the opts struct
     opts.args = args.file;
-    printf("fn args %s\n", args.file);
     opts.name = fn_name;
     return opts;
 }
 
 void FUNCTION_write_to_file(Compiler *P_comp, FuncOpt opt) {
     if (opt.fn_type == FUNCTYPE_main) {
+        // if it contians the main decorator ignore all of the arguments and function name
         char* heap_alloc = INITED_HEAP_ARRAY ? " __HeapArray *___heap": "";
         CONTENTS_append_formated(&P_comp->contents, "int __MAIN(%s) {\n", heap_alloc);
         free(opt.args);
         return;
     }
+    // If there is no return type given return nothing
     if (opt.return_type == NULL) {
         CONTENTS_append_formated(&P_comp->contents, "void %s(%s) {\n", opt.name, opt.args);
     } else {

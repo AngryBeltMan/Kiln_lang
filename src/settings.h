@@ -1,5 +1,5 @@
 #ifndef SETTINGS
 #define SETTINGS
-#include "parser.h"
+#include "parser/parser.h"
 IdentType SETTINGS_get_identtype(Expression *P_expr);
 #endif

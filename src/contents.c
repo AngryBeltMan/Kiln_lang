@@ -75,6 +75,8 @@ void CONTENTS_append_formated(Contents*P_con,const char *fmt, ...)
          va_end(args);
          CONTENTS_append_str(P_con,space);
          free(space);
+    } else {
+        printf("space was not malloced\n");
     }
 }
 #endif

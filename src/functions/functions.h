@@ -1,7 +1,7 @@
 #ifndef FUNCTIONS
 #define FUNCTIONS
 #include "../compiler.h"
-#include "../parser.h"
+#include "../parser/parser.h"
 
 typedef enum FuncType {
     FUNCTYPE_None,

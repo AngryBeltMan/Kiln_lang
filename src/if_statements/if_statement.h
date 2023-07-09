@@ -1,6 +1,6 @@
 #ifndef IFSTATEMENT
 #include "../compiler.h"
-#include "../parser.h"
+#include "../parser/parser.h"
 #define IFSTATEMENT
 
 typedef struct IfStatementOpt {
