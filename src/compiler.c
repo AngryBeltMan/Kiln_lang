@@ -6,7 +6,7 @@
 #include "compiler.h"
 #include "heap_array.h"
 #include "lib_tools.h"
-#include "parser/parser.h"
+
 
 #include "contents.c"
 #include "lib_tools.c"
@@ -23,8 +23,12 @@
 #include "functions/functions.c"
 #include "calls/calls.h"
 #include "calls/calls.c"
+#include "parser/parser.h"
+#include "parser/parser.c"
+#include "parser/tokens.h"
+#include "parser/tokens.c"
+
 void parse_expression_from_keyword(IdentType ident_type, Compiler *P_comp, Expressions *P_exprs, int index);
-Contents token_parse_epression_to_end(Expression *P_expr, int start);
 
 #define TOKEN_CMP(ident, name, type)\
     if (!strcmp(ident, name)) {\
@@ -83,6 +87,7 @@ void COMPILER_parse(Compiler *P_comp, Expressions *P_exprs) {
         }
     }
 }
+
 void parse_expression_from_keyword(IdentType ident_type, Compiler *P_comp, Expressions *P_exprs, int index) {
 
     /* switch (get_ident_type(token.value)) { */
@@ -122,7 +127,7 @@ void parse_expression_from_keyword(IdentType ident_type, Compiler *P_comp, Expre
             break;
         }
         case IdentType_return_fn: {
-            char* return_val = token_parse_epression_to_end(&P_exprs->exprs[index],1).file;
+            char* return_val = token_parse_expression_to_end(&P_exprs->exprs[index],1).file;
             CONTENTS_append_formated(&P_comp->contents, "return %s;\n",return_val);
             free(return_val);
             break;
@@ -165,29 +170,6 @@ void COMPILER_drop(Compiler P_comp) {
     VECTOR_drop(P_comp.modules);
     free(P_comp.contents.file);
     fclose(P_comp.file);
-}
-
-Contents token_parse_expression_until(Expression *P_expr, int start, TokenType end_token) {
-    Contents string = CONTENTS_new();
-    for (int text = start; text < (P_expr->size / sizeof(Token)); ++text) {
-        Token *token = &P_expr->tokens[text];
-        if (token->token_type == end_token) {
-            break;
-        }
-        if (token->value) {
-            CONTENTS_append_str(&string, token->value);
-        } else {
-            CONTENTS_append(&string, token->character);
-        }
-    }
-    return string;
-}
-Contents token_parse_epression_to_end(Expression *P_expr, int start) {
-    return token_parse_expression_until(P_expr, start, TokenType_None);
-}
-Contents token_string_parse(Expression *P_expr, int start) {
-    Contents con = token_parse_expression_until(P_expr, start, TokenType_DoubleQuote);
-    return con;
 }
 
 IdentType get_ident_type(char *ident) {

@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "parser.h"
+#include "tokens.h"
 #include "../contents.c"
 #ifndef TOKENMATCH
 #define EXP_APPEND(expr,token) /*printf("appended from fn: %s on line: %i\n",__FUNCTION__,__LINE__); */ EXPRESSIONappend(expr,token);
@@ -70,6 +71,8 @@ void options_check(int open_char_count,char* value);
         CONTENTSAPPEND()\
     }
 #endif
+#ifndef PARSERIMPL
+#define PARSERIMPL
 const int DROPPINGDEBUGINFO = 1;
 
 void options_check(int open_char_count,char* value) {
@@ -91,7 +94,6 @@ Expression EXPRESSION_new() {
 void EXPRESSIONappend(Expression* P_expr,Token token) {
     if (P_expr->size + sizeof(Token) > P_expr->max) {
         P_expr->max *= 2;
-        printf("realloc\n");
         P_expr->tokens = realloc(P_expr->tokens,P_expr->max);
         if (P_expr->tokens == NULL) { printf("ERROR: failed to realloc expression %s\n",__FUNCTION__); }
     }
@@ -212,17 +214,4 @@ Expressions EXPRESSIONS_from_file(FILE *P_file) {
     if (expr.tokens != NULL) { free(expr.tokens); expr.tokens = NULL; }
     return exprs;
 }
-int EXPRESSION_token_exist(Expression *P_expr,int start,TokenType token) {
-    for (;start < ((P_expr->size)/sizeof(Token));++start) {
-        if (P_expr->tokens[start].token_type == token) {
-            return start;
-        } else if (P_expr->tokens[start].token_type == TokenType_Space) {
-            continue;
-        // this means it is not white space and a completly different token
-        } else {
-            return -1;
-        }
-    }
-    return -1;
-}
-
+#endif

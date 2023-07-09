@@ -22,7 +22,7 @@ Contents CONTENTS_new() {
     return con;
 }
 
-void CONTENTSappend(Contents *con,char c) {
+static inline void CONTENTSappend(Contents *con,char c) {
     if (con->size + 2 > con->max) {
         con->max *= 2;
         con->file = realloc(con->file,con->max);
@@ -33,7 +33,7 @@ void CONTENTSappend(Contents *con,char c) {
     con->size += 1;
 }
 
-void CONTENTS_append_str(Contents *con,char* string) {
+static inline void CONTENTS_append_str(Contents *con,char* string) {
     while (con->size + strlen(string) > con->max) {
         con->max *= 2;
         con->file = realloc(con->file,con->max);
@@ -43,7 +43,7 @@ void CONTENTS_append_str(Contents *con,char* string) {
     con->size += strlen(string);
 }
 
-Contents CONTENTS_slice_range(Contents *P_con,uint start,uint end) {
+static inline Contents CONTENTS_slice_range(Contents *P_con,uint start,uint end) {
     Contents cont = CONTENTS_new();
     for (;start <= end; ++start) {
         CONTENTS_append(&cont, P_con->file[start]);
@@ -59,7 +59,7 @@ Contents CONTENTS_from_char_slice_range(char *P_con,uint start,uint end) {
     return cont;
 }
 
-void CONTENTS_append_formated(Contents*P_con,const char *fmt, ...)
+static inline void CONTENTS_append_formated(Contents*P_con,const char *fmt, ...)
 {
     va_list args;
     size_t  len;

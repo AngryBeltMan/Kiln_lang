@@ -5,7 +5,11 @@ func hello() {
 
 @main
 func main() {
-    for i $int 0 -> 10 {
+    let one $int = @const 0;
+    if (one == 0) {
 
+    }
+    for i $int 0 -> 10 {
+        println("hello world");
     }
 }

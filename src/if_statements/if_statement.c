@@ -23,10 +23,12 @@ IfStatementOpt IFSTATEMENT_parse(Expression* P_expr) {
     opts.value = cmp_statement.file;
     return opts;
 }
+
 void IFSTATEMENT_write_to_file(Compiler* P_comp,IfStatementOpt statement) {
-    CONTENTS_append_formated(&P_comp->contents,"if (%s) {\n",statement.value);
+    CONTENTS_append_formated(&P_comp->contents,"if (%s {\n",statement.value);
     free(statement.value);
 }
+
 void IfStatement_get_contents(Contents* P_con, Expression* P_expr, int *P_index) {
     int parenthesis_count = 1;
     for (; *P_index < (P_expr->size/sizeof(Token)); ++*P_index) {
@@ -56,6 +58,5 @@ void IfStatement_get_contents(Contents* P_con, Expression* P_expr, int *P_index)
         }
     }
 }
-
 #endif
 #endif
