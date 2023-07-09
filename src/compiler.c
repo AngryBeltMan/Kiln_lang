@@ -13,15 +13,18 @@
 
 #include "for_loop/forloop.c"
 #include "for_loop/forloop.h"
-#include "if_statements/if_statement.c"
-#include "if_statements/if_statement.h"
 #include "settings.h"
 #include "settings.c"
+#include "if_statements/if_statement.c"
+#include "if_statements/if_statement.h"
 #include "variables/variables.c"
 #include "variables/variables.h"
 #include "functions/functions.h"
 #include "functions/functions.c"
+#include "calls/calls.h"
+#include "calls/calls.c"
 void parse_expression_from_keyword(IdentType ident_type, Compiler *P_comp, Expressions *P_exprs, int index);
+Contents token_parse_epression_to_end(Expression *P_expr, int start);
 
 #define TOKEN_CMP(ident, name, type)\
     if (!strcmp(ident, name)) {\
@@ -108,6 +111,18 @@ void parse_expression_from_keyword(IdentType ident_type, Compiler *P_comp, Expre
             FuncOpt func_opts = FUNCTION_parse(&P_exprs->exprs[index]);
             FUNCTION_write_to_file(P_comp, func_opts);
             break;
+        case IdentType_var_name: {
+            CallsType call = CALLSTYPE_parse(&P_exprs->exprs[index],0);
+            CALLSTYPE_write_to_file(P_comp, call);
+            CALLSTYPE_free(call);
+            break;
+        }
+        case IdentType_return_fn: {
+            char* return_val = token_parse_epression_to_end(&P_exprs->exprs[index],1).file;
+            CONTENTS_append_formated(&P_comp->contents, "return %s;\n",return_val);
+            free(return_val);
+            break;
+        }
         default:
             printf("other type %i\n", ident_type);
             break;
@@ -138,7 +153,7 @@ void COMPILER_write_to_file(Compiler *P_comp) {
     // adds the heap array argument to the main function if it INITED_HEAP_ARRAY is true
     fprintf(P_comp->file,"__MAIN(%s);\n",INITED_HEAP_ARRAY ? "&___heap":"");
     if (INITED_HEAP_ARRAY) { fprintf(P_comp->file, "__HeapArrayDrop(___heap);\n"); }
-    fprintf(P_comp->file, "return 0; \n }");
+    fprintf(P_comp->file, "return 0;\n }");
 }
 
 void COMPILER_drop(Compiler P_comp) {
@@ -163,9 +178,11 @@ Contents token_parse_expression_until(Expression *P_expr, int start, TokenType e
     }
     return string;
 }
+Contents token_parse_epression_to_end(Expression *P_expr, int start) {
+    return token_parse_expression_until(P_expr, start, TokenType_None);
+}
 Contents token_string_parse(Expression *P_expr, int start) {
-    Contents con =
-        token_parse_expression_until(P_expr, start, TokenType_DoubleQuote);
+    Contents con = token_parse_expression_until(P_expr, start, TokenType_DoubleQuote);
     return con;
 }
 
@@ -178,6 +195,7 @@ IdentType get_ident_type(char *ident) {
     TOKEN_CMP(ident, "if", IdentType_if_statement);
     TOKEN_CMP(ident, "for", IdentType_for_loop);
     TOKEN_CMP(ident, "func", IdentType_function);
+    TOKEN_CMP(ident, "ret", IdentType_return_fn);
     TOKEN_CMP(&ident[0], "}", IdentType_break_bracket);
     printf("varname\n");
     return IdentType_var_name;

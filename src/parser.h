@@ -17,9 +17,15 @@ typedef enum TokenType {
     TokenType_AtSign,
     TokenType_EqualSign,
     TokenType_Space,
+    // Nonexistant Token
+    TokenType_None,
     // double char tokens
     TokenType_RightArrow,
     TokenType_LeftArrow,
+    TokenType_Addition,
+    TokenType_Subtraction,
+    TokenType_Multiplication,
+    TokenType_Division,
 } TokenType;
 typedef enum IdentType {
     IdentType_println,
@@ -30,6 +36,8 @@ typedef enum IdentType {
     IdentType_var_name,
     IdentType_if_statement,
     IdentType_break_bracket,
+    IdentType_break_scope,
+    IdentType_return_fn,
     IdentType_function,
     IdentType_for_loop,
 } IdentType;

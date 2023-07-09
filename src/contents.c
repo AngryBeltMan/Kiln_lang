@@ -50,6 +50,7 @@ Contents CONTENTS_slice_range(Contents *P_con,uint start,uint end) {
     }
     return cont;
 }
+
 Contents CONTENTS_from_char_slice_range(char *P_con,uint start,uint end) {
     Contents cont = CONTENTS_new();
     for (;start <= end; ++start) {
@@ -57,6 +58,7 @@ Contents CONTENTS_from_char_slice_range(char *P_con,uint start,uint end) {
     }
     return cont;
 }
+
 void CONTENTS_append_formated(Contents*P_con,const char *fmt, ...)
 {
     va_list args;

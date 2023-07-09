@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+
 VarOpts VAROPTS_new() {
     VarOpts varopts;
     varopts.value = NULL;
@@ -15,6 +16,7 @@ VarOpts VAROPTS_new() {
     varopts.string = 0;
     return varopts;
 }
+
 void VAROPTS_create_var(VarOpts varopts,Compiler *P_comp) {
     if (varopts.heap_allocated) {
         Contents type = CONTENTS_from_char_slice_range(varopts.type,0,strlen(varopts.type)-2);

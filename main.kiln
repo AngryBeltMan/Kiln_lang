@@ -1,8 +1,3 @@
-@return=char*
-func hello() {
-println("hello world");
-}
 @main
 func fjdk() {
-    let hello $char* = @heap @size=4 "wha";
 }

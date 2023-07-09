@@ -86,6 +86,7 @@ void FUNCTION_write_to_file(Compiler *P_comp, FuncOpt opt) {
     if (opt.fn_type == FUNCTYPE_main) {
         char* heap_alloc = INITED_HEAP_ARRAY ? " __HeapArray *___heap": "";
         CONTENTS_append_formated(&P_comp->contents, "int __MAIN(%s) {\n", heap_alloc);
+        free(opt.args);
         return;
     }
     if (opt.return_type == NULL) {
