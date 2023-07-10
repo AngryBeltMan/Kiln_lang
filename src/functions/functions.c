@@ -15,6 +15,7 @@ FuncOpt FUNCTION_new() {
     opts.name = NULL;
     opts.fn_type = FUNCTYPE_None;
     opts.return_type = NULL;
+    opts.inline_fn = 0;
     return opts;
 }
 
@@ -41,9 +42,12 @@ int settings_parse(Expression *P_expr, FuncOpt *opts) {
                 index += 2;
             }
             if (!strcmp(setting_type.value, "main")) {
-                printf("main\n");
                 opts->fn_type = FUNCTYPE_main;
                 index += 3;
+            }
+            if (!strcmp(setting_type.value, "inline")) {
+                opts->inline_fn = 1;
+                index += 2;
             }
         }
     } while (setting != -1);
@@ -92,6 +96,7 @@ void FUNCTION_write_to_file(Compiler *P_comp, FuncOpt opt) {
         free(opt.args);
         return;
     }
+    if (opt.inline_fn) { CONTENTS_append_str(&P_comp->contents, "static inline "); }
     // If there is no return type given return nothing
     if (opt.return_type == NULL) {
         CONTENTS_append_formated(&P_comp->contents, "void %s(%s) {\n", opt.name, opt.args);

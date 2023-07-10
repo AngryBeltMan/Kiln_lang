@@ -198,6 +198,7 @@ Expressions EXPRESSIONS_from_file(FILE *P_file) {
             TOKENMATCH('$', TokenType_DollarSign)
             TOKENMATCH('@', TokenType_AtSign)
             TOKENMATCH('=', TokenType_EqualSign)
+            TOKENMATCH(',', TokenType_Comma)
             default:
                 identifier = 1;
                 CONTENTS_append(&value,ch);

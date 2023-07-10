@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#define SKIPCHAR(skip_char) case skip_char: { break; }
 
 VarOpts VAROPTS_new() {
     VarOpts varopts;
@@ -123,7 +124,9 @@ void variable_value_parse(int* ident_token,Expression* P_expr,Compiler* P_comp, 
                 CONTENTS_append_str(&var_value,value.value);
                 continue;
             }
+            SKIPCHAR(TokenType_EqualSign);
             default:
+                CONTENTS_append(&var_value,value.character);
                 printf("other %i\n",value.token_type);
                 break;
         }

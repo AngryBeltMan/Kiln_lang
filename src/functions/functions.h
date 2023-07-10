@@ -21,6 +21,7 @@ typedef struct FunctionOpt {
     char *return_type;
     char *name;
     char *args;
+    int inline_fn;
 } FuncOpt;
 
 FuncOpt FUNCTION_new();

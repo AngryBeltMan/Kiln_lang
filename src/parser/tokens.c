@@ -37,4 +37,11 @@ int EXPRESSION_token_exist(Expression *P_expr,int start,TokenType token) {
     }
     return -1;
 }
+void CONTENTS_append_token(Contents *P_con, Token token) {
+    if (token.token_type == TokenType_Ident) {
+        CONTENTS_append_str(P_con, token.value);
+    } else {
+        CONTENTS_append(P_con, token.character);
+    }
+}
 #endif

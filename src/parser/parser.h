@@ -15,6 +15,7 @@ typedef enum TokenType {
     TokenType_DoubleQuote,
     TokenType_SingleQuote,
     TokenType_DollarSign,
+    TokenType_Comma,
     TokenType_AtSign,
     TokenType_EqualSign,
     TokenType_Space,
@@ -39,6 +40,7 @@ typedef enum IdentType {
     IdentType_break_bracket,
     IdentType_break_scope,
     IdentType_return_fn,
+    IdentType_struct_init,
     IdentType_function,
     IdentType_for_loop,
 } IdentType;

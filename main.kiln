@@ -1,15 +1,11 @@
+@inline
 @return=int
-func hello() {
-    ret 0;
+func hello(int value, char* name) {
+    ret value;
 }
-
+struct Hello( int name, char* wow );
 @main
 func main() {
-    let one $int = @const 0;
-    if (one == 0) {
-
-    }
-    for i $int 0 -> 10 {
-        println("hello world");
-    }
+    let number $int = hello(290,"wow");
+    ret 0;
 }

@@ -12,4 +12,6 @@ Contents token_parse_expression_to_end(Expression *P_expr, int start);
 Contents token_string_parse(Expression *P_expr, int start);
 
 int EXPRESSION_token_exist(Expression *P_expr,int start,TokenType token);
+
+void CONTENTS_append_token(Contents *P_con, Token token);
 #endif

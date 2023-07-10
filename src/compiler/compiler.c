@@ -50,8 +50,9 @@ void COMPILER_parse(Compiler *P_comp, Expressions *P_exprs) {
 }
 
 void COMPILER_write_to_file(Compiler *P_comp) {
-    if (INITED_HEAP_ARRAY) { fprintf(P_comp->file, "%s", HEAPARRAYCONTENTS); }
     MODULES_write_to_file(P_comp);
+
+    if (INITED_HEAP_ARRAY) { fprintf(P_comp->file, "%s", HEAPARRAYCONTENTS); }
 
     fprintf(P_comp->file, "%s", P_comp->contents.file);
 

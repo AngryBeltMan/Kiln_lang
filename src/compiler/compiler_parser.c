@@ -16,6 +16,8 @@
 #include "../parser/parser.c"
 #include "../parser/tokens.h"
 #include "../parser/tokens.c"
+#include "../structs/structs.h"
+#include "../structs/structs.c"
 
 #define TOKEN_CMP(ident, name, type)\
     if (!strcmp(ident, name)) {\
@@ -32,6 +34,7 @@ IdentType get_ident_type(char *ident) {
     TOKEN_CMP(ident, "for", IdentType_for_loop);
     TOKEN_CMP(ident, "func", IdentType_function);
     TOKEN_CMP(ident, "ret", IdentType_return_fn);
+    TOKEN_CMP(ident, "struct", IdentType_struct_init);
     TOKEN_CMP(&ident[0], "}", IdentType_break_bracket);
     printf("varname\n");
     return IdentType_var_name;
@@ -88,6 +91,10 @@ void parse_expression_from_keyword(IdentType ident_type, Compiler *P_comp, Expre
             CONTENTS_append_formated(&P_comp->contents, "return %s;\n",return_val);
             free(return_val);
             break;
+        }
+        case IdentType_struct_init: {
+            StructOpt opts = STRUCT_parse_file(&P_exprs->exprs[index]);
+            STRUCT_write_to_file(P_comp, opts);
         }
         default:
             printf("other type %i\n", ident_type);
