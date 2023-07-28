@@ -23,12 +23,12 @@ void HASHMAP_drop(HashMap hashmap) {
 }
 
 void HASHMAP_insert(HashMap *P_hashmap,char* P_name, void* P_value) {
-    uint total = 0;
+    unsigned int total = 0;
     for (int i = 0; i < strlen(P_name); ++i) {
         total += (int)P_name[i];
     }
-    uint hash = total % HASHMAP_SIZE;
-    const uint original_hash = hash;
+    unsigned int hash = total % HASHMAP_SIZE;
+    const unsigned int original_hash = hash;
     int inserted = 0;
     do {
         if (!P_hashmap->list[hash]) {
@@ -47,12 +47,12 @@ void HASHMAP_insert(HashMap *P_hashmap,char* P_name, void* P_value) {
     printf("hash %i\n",hash);
 }
 void* HASHMAP_get(HashMap*P_hashmap,char* P_name) {
-    uint total = 0;
+    unsigned int total = 0;
     for (int i = 0; i < strlen(P_name); ++i) {
         total += (int)P_name[i];
     }
-    uint hash = total % HASHMAP_SIZE;
-    const uint original_hash = hash;
+    unsigned int hash = total % HASHMAP_SIZE;
+    const unsigned int original_hash = hash;
     int aquired = 0;
     void* value = NULL;
     do {

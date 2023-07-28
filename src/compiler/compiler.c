@@ -22,8 +22,7 @@ Compiler COMPILER_new() {
 
 void COMPILER_parse(Compiler *P_comp, Expressions *P_exprs) {
     for (int i = 0; i < (P_exprs->size / sizeof(Expression)); ++i) {
-        uint e = P_exprs->exprs[i].size;
-        uint token_index = 0;
+        unsigned int token_index = 0;
         Token token = P_exprs->exprs[i].tokens[token_index];
         switch (token.token_type) {
             case TokenType_Ident: {

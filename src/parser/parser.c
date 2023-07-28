@@ -73,7 +73,7 @@ void options_check(int open_char_count,char* value);
 #endif
 #ifndef PARSERIMPL
 #define PARSERIMPL
-const int DROPPINGDEBUGINFO = 0;
+const int DROPPINGDEBUGINFO = 1;
 
 void options_check(int open_char_count,char* value) {
     if (open_char_count == 0) {

@@ -1,6 +1,10 @@
 #include "../contents.c"
+
 #include "parser.h"
+
 #ifndef TOKENSIMPL
+#define TOKENSIMPL
+
 Contents token_parse_expression_until(Expression *P_expr, int start, TokenType end_token) {
     Contents string = CONTENTS_new();
     for (int text = start; text < (P_expr->size / sizeof(Token)); ++text) {
@@ -16,14 +20,19 @@ Contents token_parse_expression_until(Expression *P_expr, int start, TokenType e
     }
     return string;
 }
+
 Contents token_parse_expression_to_end(Expression *P_expr, int start) {
     return token_parse_expression_until(P_expr, start, TokenType_None);
 }
+
 Contents token_string_parse(Expression *P_expr, int start) {
     Contents con = token_parse_expression_until(P_expr, start, TokenType_DoubleQuote);
     return con;
 }
 
+
+// Parses the epxression and returns the index on where that token occured.
+// Returns -1 if it parses the entire expression without finding the certain token or encounters a token different from the token being searched for.
 int EXPRESSION_token_exist(Expression *P_expr,int start,TokenType token) {
     for (;start < ((P_expr->size)/sizeof(Token));++start) {
         if (P_expr->tokens[start].token_type == token) {
@@ -37,6 +46,7 @@ int EXPRESSION_token_exist(Expression *P_expr,int start,TokenType token) {
     }
     return -1;
 }
+
 void CONTENTS_append_token(Contents *P_con, Token token) {
     if (token.token_type == TokenType_Ident) {
         CONTENTS_append_str(P_con, token.value);
@@ -44,4 +54,5 @@ void CONTENTS_append_token(Contents *P_con, Token token) {
         CONTENTS_append(P_con, token.character);
     }
 }
+
 #endif

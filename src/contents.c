@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <assert.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,8 +9,8 @@
 #define CONTENTS_append(con,c) /*printf("appended on line %i on file %s\n",__LINE__,__FILE__);*/ CONTENTSappend(con,c);
 typedef struct Contents {
     char* file;
-    uint size;
-    uint max;
+    unsigned int size;
+    unsigned int max;
 } Contents;
 
 Contents CONTENTS_new() {
@@ -43,7 +44,7 @@ static inline void CONTENTS_append_str(Contents *con,char* string) {
     con->size += strlen(string);
 }
 
-static inline Contents CONTENTS_slice_range(Contents *P_con,uint start,uint end) {
+static inline Contents CONTENTS_slice_range(Contents *P_con,unsigned int start,unsigned int end) {
     Contents cont = CONTENTS_new();
     for (;start <= end; ++start) {
         CONTENTS_append(&cont, P_con->file[start]);
@@ -51,7 +52,7 @@ static inline Contents CONTENTS_slice_range(Contents *P_con,uint start,uint end)
     return cont;
 }
 
-Contents CONTENTS_from_char_slice_range(char *P_con,uint start,uint end) {
+Contents CONTENTS_from_char_slice_range(char *P_con,unsigned int start,unsigned int end) {
     Contents cont = CONTENTS_new();
     for (;start <= end; ++start) {
         CONTENTS_append(&cont, P_con[start]);
@@ -59,7 +60,12 @@ Contents CONTENTS_from_char_slice_range(char *P_con,uint start,uint end) {
     return cont;
 }
 
-static inline void CONTENTS_append_formated(Contents*P_con,const char *fmt, ...)
+// DOCS: append to contents using a formatted string.
+// assert(!strcmp(content.file, "hello "));
+// assert(!strcmp(world,"world"));
+// CONTENTS_append_formatted(&content, "%s!", world);
+// assert(!strcmp(content.file, "hello world!"));
+static inline void CONTENTS_append_formatted(Contents*P_con,const char *fmt, ...)
 {
     va_list args;
     size_t  len;
@@ -78,5 +84,65 @@ static inline void CONTENTS_append_formated(Contents*P_con,const char *fmt, ...)
     } else {
         printf("space was not malloced\n");
     }
+}
+
+static inline void CONTENTS_pop_front(Contents *P_con, const unsigned int amount) {
+    const int length = P_con->size;
+    if (amount > length) {
+        fprintf(stderr, "Pop amount is greater than str length\n");
+        return;
+    }
+    char* new_str = malloc((length - amount) + 1);
+    assert(new_str != NULL && "Failed to malloc");
+    new_str[(length - amount)] = '\0';
+    for (int i = amount;i < length;++i) {
+        new_str[i - amount] = P_con->file[i];
+    }
+    free(P_con->file);
+    P_con->file = new_str;
+    P_con->size = length - amount;
+    P_con->max = (length - amount) + 1;
+}
+
+// modifies the Contents argument to be only the first part of the Content and returns the other half of the Content.
+// Example:
+// assert(cool.file == "cool");
+// char*  other_cool = CONETENTS_split_at(&cool, 1);
+// assert(cool.file == "co");
+// assert(other_cool.file == "ol");
+char* CONTENTS_split_at(Contents *P_con, unsigned int index) {
+    assert(P_con->size >= index);
+    if (!index) {
+        char* first_segment = malloc(1);
+        strcpy(first_segment, "");
+        return first_segment;
+    }
+    char* first_segment = malloc(index);
+    memmove(first_segment, P_con->file, index);
+    CONTENTS_pop_front(P_con, index);
+    return first_segment;
+}
+Contents CONTENTS_replace(Contents *P_con, char* from, char* to) {
+    const unsigned int from_length = strlen(from);
+    unsigned int matches = 0;
+    unsigned int index = 0;
+    do {
+        if (P_con->file[index] == from[matches]) { ++matches; } else { matches = 0;}
+        ++index;
+    } while(!(index < P_con->size) | (matches != from_length));
+    if (matches == from_length) {
+        char* first = CONTENTS_split_at(P_con, index - from_length);
+        CONTENTS_pop_front(P_con, from_length);
+        Contents replaced_string = CONTENTS_new();
+        CONTENTS_append_formatted(&replaced_string, "%s%s%s",first, to, P_con->file);
+        free(first);
+        return replaced_string;
+    }
+    return CONTENTS_new();
+}
+
+static inline void CONTENTS_drop(Contents con) {
+    free(con.file);
+    con.file = NULL;
 }
 #endif

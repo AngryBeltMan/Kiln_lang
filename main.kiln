@@ -1,11 +1,4 @@
-@inline
 @return=int
-func hello(int value, char* name) {
-    ret value;
-}
-struct Hello( int name, char* wow );
-@main
-func main() {
-    let number $int = hello(290,"wow");
-    ret 0;
+@inline
+func self_wow(int what, self cool) {
 }

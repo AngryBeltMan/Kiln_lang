@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
-#ifndef TOKENS
-#define TOKENS
+#ifndef PARSER
+#define PARSER
 
 // setting vars
 static int INITED_HEAP_ARRAY = 0;

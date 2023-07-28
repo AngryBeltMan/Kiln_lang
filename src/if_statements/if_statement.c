@@ -25,7 +25,7 @@ IfStatementOpt IFSTATEMENT_parse(Expression* P_expr) {
 }
 
 void IFSTATEMENT_write_to_file(Compiler* P_comp,IfStatementOpt statement) {
-    CONTENTS_append_formated(&P_comp->contents,"if (%s {\n",statement.value);
+    CONTENTS_append_formatted (&P_comp->contents,"if (%s {\n",statement.value);
     free(statement.value);
 }
 

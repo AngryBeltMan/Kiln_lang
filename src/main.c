@@ -7,6 +7,7 @@
 #include "parser/parser.c"
 #include "compiler/compiler.h"
 #include "compiler/compiler.c"
+
 int main(void) {
     FILE *main_file;
     main_file = fopen("main.kiln", "r");

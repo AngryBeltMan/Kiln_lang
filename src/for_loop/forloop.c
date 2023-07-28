@@ -42,13 +42,13 @@ ForLoopOpt FORLOOP_parse(Expression *P_expr) {
 }
 
 void FORLOOP_write_to_file(Compiler* P_comp, ForLoopOpt opts) {
-    CONTENTS_append_formated(&P_comp->contents,"for (%s %s = %i;",opts.var.type,opts.var.name,opts.start);
+    CONTENTS_append_formatted(&P_comp->contents,"for (%s %s = %i;",opts.var.type,opts.var.name,opts.start);
     if (opts.start == 1) {
-        CONTENTS_append_formated(&P_comp->contents,"%s > %i;",opts.var.name,opts.end);
+        CONTENTS_append_formatted(&P_comp->contents,"%s > %i;",opts.var.name,opts.end);
     } else {
-        CONTENTS_append_formated(&P_comp->contents,"%s < %i;",opts.var.name,opts.end);
+        CONTENTS_append_formatted (&P_comp->contents,"%s < %i;",opts.var.name,opts.end);
     }
-    CONTENTS_append_formated(&P_comp->contents,"%s += %i) {\n",opts.var.name,opts.step);
+    CONTENTS_append_formatted (&P_comp->contents,"%s += %i) {\n",opts.var.name,opts.step);
 }
 
 #endif

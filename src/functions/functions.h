@@ -22,9 +22,13 @@ typedef struct FunctionOpt {
     char *name;
     char *args;
     int inline_fn;
+    char* method;
 } FuncOpt;
 
 FuncOpt FUNCTION_new();
+
+// DOCS: parse the func expression
 FuncOpt FUNCTION_parse(Expression *P_expr);
+
 void FUNCTION_write_to_file(Compiler *P_comp, FuncOpt opt );
 #endif

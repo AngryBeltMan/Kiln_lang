@@ -43,7 +43,7 @@ IdentType get_ident_type(char *ident) {
 void write_print(Compiler *P_comp, Expression *P_expr, char *formatting) {
     COMPILER_add_module(P_comp, MODULE_stdio);
     Contents contents = token_string_parse(P_expr, 3);
-    CONTENTS_append_formated(&P_comp->contents, "printf(\"%s%s", contents.file, formatting);
+    CONTENTS_append_formatted(&P_comp->contents, "printf(\"%s%s", contents.file, formatting);
     free(contents.file);
     contents.file = NULL;
 }
@@ -88,7 +88,7 @@ void parse_expression_from_keyword(IdentType ident_type, Compiler *P_comp, Expre
         }
         case IdentType_return_fn: {
             char* return_val = token_parse_expression_to_end(&P_exprs->exprs[index],1).file;
-            CONTENTS_append_formated(&P_comp->contents, "return %s;\n",return_val);
+            CONTENTS_append_formatted(&P_comp->contents, "return %s;\n",return_val);
             free(return_val);
             break;
         }

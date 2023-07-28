@@ -43,23 +43,23 @@ CallsType CALLSTYPE_parse(Expression *P_expr, int start_index) {
 void CALLSTYPE_write_to_file(Compiler *P_comp, CallsType call_type) {
     switch (call_type.CallTypeArm) {
         case CALLTYPEARM_var_assign: {
-            CONTENTS_append_formated(&P_comp->contents, "%s = ", call_type.Type.VarAssign.var_name);
+            CONTENTS_append_formatted (&P_comp->contents, "%s = ", call_type.Type.VarAssign.var_name);
             CALLSTYPE_write_to_file(P_comp, *call_type.Type.VarAssign.value);
             break;
         }
         case CALLTYPEARM_value: {
-            CONTENTS_append_formated(&P_comp->contents, "%s;\n", call_type.Type.Value.value);
+            CONTENTS_append_formatted (&P_comp->contents, "%s;\n", call_type.Type.Value.value);
             break;
         }
         case CALLTYPEARM_fn_call: {
-            CONTENTS_append_formated(&P_comp->contents, "%s(%s);\n",call_type.Type.FnCall.fn_name, call_type.Type.FnCall.args );
+            CONTENTS_append_formatted (&P_comp->contents, "%s(%s);\n",call_type.Type.FnCall.fn_name, call_type.Type.FnCall.args );
             break;
         }
         case CALLTYPEARM_arth: {
             break;
         }
     }
-    CONTENTS_append_formated(&P_comp->contents, "");
+    CONTENTS_append_formatted (&P_comp->contents, "");
 }
 void CALLSTYPE_free(CallsType call_type) {
     switch (call_type.CallTypeArm) {

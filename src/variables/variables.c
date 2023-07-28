@@ -1,4 +1,5 @@
 #include "../compiler/compiler.h"
+#include "../parser/tokens.h"
 #include "../lib_tools.h"
 #include "../contents.c"
 #include "../compiler/modules.h"
@@ -27,18 +28,18 @@ void VAROPTS_create_var(VarOpts varopts,Compiler *P_comp) {
     CONTENTS_append_str(&P_comp->contents,(varopts.const_val) ? "const  " : "");
     if (varopts.heap_allocated) {
         Contents type = CONTENTS_from_char_slice_range(varopts.type,0,strlen(varopts.type)-2);
-        CONTENTS_append_formated(&P_comp->contents,"%s %s = malloc(sizeof(%s) * %i);\n",varopts.type,varopts.name,type.file,varopts.size_mult);
+        CONTENTS_append_formatted (&P_comp->contents,"%s %s = malloc(sizeof(%s) * %i);\n",varopts.type,varopts.name,type.file,varopts.size_mult);
         free(type.file);
-        CONTENTS_append_formated(&P_comp->contents, "__HeapArrayAppend(___heap, %s);\n",varopts.name);
+        CONTENTS_append_formatted (&P_comp->contents, "__HeapArrayAppend(___heap, %s);\n",varopts.name);
         if (varopts.string) {
             COMPILER_add_module(P_comp, MODULE_string);
             printf("varopt value %s\n",varopts.value);
-            CONTENTS_append_formated(&P_comp->contents, "strcpy(%s,%s);\n",varopts.name,varopts.value);
+            CONTENTS_append_formatted (&P_comp->contents, "strcpy(%s,%s);\n",varopts.name,varopts.value);
         } else {
-            CONTENTS_append_formated(&P_comp->contents, "*%s = %s;\n",varopts.name,varopts.value);
+            CONTENTS_append_formatted (&P_comp->contents, "*%s = %s;\n",varopts.name,varopts.value);
         }
     } else {
-        CONTENTS_append_formated(&P_comp->contents,"%s %s = %s;\n",varopts.type,varopts.name,varopts.value);
+        CONTENTS_append_formatted (&P_comp->contents,"%s %s = %s;\n",varopts.type,varopts.name,varopts.value);
     }
     if (varopts.value != NULL) { free(varopts.value); }
 }
@@ -88,11 +89,15 @@ void variable_value_parse(int* ident_token,Expression* P_expr,Compiler* P_comp, 
         switch (value.token_type) {
             case TokenType_DoubleQuote: {
                 Contents str = token_string_parse(P_expr, *ident_token + 1);
+                *ident_token = TOKEN_expression_index(P_expr, *ident_token + 1, TokenType_DoubleQuote );
+                printf("index ident %i\n",*ident_token);
+                // makes sure there is an end quote
+                assert((*ident_token != -1) && "Error: expected token double quote");
                 varopts->string = 1;
-                CONTENTS_append_formated(&var_value, "\"%s\"",str);
+                CONTENTS_append_formatted (&var_value, "\"%s\"",str);
                 varopts->value = var_value.file;
                 free(str.file);
-                return;
+                continue;
             }
             case TokenType_AtSign: {
                 if (!strcmp(P_expr->tokens[*ident_token+1].value, "heap")) {
