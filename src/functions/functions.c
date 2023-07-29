@@ -27,20 +27,14 @@ int settings_parse(Expression *P_expr, FuncOpt *opts) {
     do {
         setting = TOKEN_expression_index(P_expr, index, TokenType_AtSign);
         /* setting = EXPRESSION_token_exist(P_expr, index, TokenType_AtSign); */
-        printf("setting %i\n",setting);
         if (setting != -1) {
             Token setting_type = P_expr->tokens[setting + 1];
-            if (setting_type.token_type != TokenType_Ident) {
-                printf("ERROR: expected token ident after token '@' %s\n",
-                        __FUNCTION__);
-            }
+            assert(setting_type.token_type == TokenType_Ident && "ERROR: expected token ident after token '@'");
             if (!strcmp(setting_type.value, "return")) {
                 index = setting;
                 char *return_val = parse_setting_var(P_expr, &index);
-                printf("return val %s\n", return_val);
                 assert(return_val != NULL &&
                         "ERROR: return setting var requires a return type value\n");
-                printf("return val %s\n", return_val);
                 opts->return_type = return_val;
             }
             if (!strcmp(setting_type.value, "method")) {
@@ -60,7 +54,6 @@ int settings_parse(Expression *P_expr, FuncOpt *opts) {
             }
         }
     } while (setting != -1);
-    printf("index %i\n", index);
     // returns two if index is -1 (no settings to parse)
     return index == -1 ? 1 : index + 2;
 }
@@ -71,9 +64,7 @@ FuncOpt FUNCTION_parse(Expression *P_expr) {
 
     // parses all of the settings args aka @name tokens
     int func_index = settings_parse(P_expr, &opts);
-    printf("fn index %i\n", func_index);
     char *fn_name = P_expr->tokens[func_index].value;
-    printf("%c\n", P_expr->tokens[func_index + 1].character);
     assert(fn_name != NULL && "ERROR: could not parse function name.");
     // gets the index for the left parenthesis token
     ++func_index;

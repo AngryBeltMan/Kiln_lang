@@ -24,6 +24,7 @@ typedef enum TokenType {
     // double char tokens
     TokenType_RightArrow,
     TokenType_method_call,
+    TokenType_fat_arrow,
     TokenType_method_call_no_self,
     TokenType_LeftArrow,
     TokenType_Addition,

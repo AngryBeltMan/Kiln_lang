@@ -18,6 +18,10 @@ typedef struct CallsType {
         CALLTYPEARM_var_assign,
 
     } CallTypeArm;
+    // Is_method checks if the function is a method to determine whether or not to free fn_name.
+    // Is_method is outside of the union because I believe it messes with the alignment of the union or memory in the heap.
+    // That or I am just schizo rambling.
+    int is_method;
     union {
         struct {
             char* var_name;

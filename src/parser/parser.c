@@ -57,6 +57,7 @@ void options_check(int open_char_count,char* value);
     TOKENSTRMATCH(value.file,"<-",TokenType_LeftArrow);\
     TOKENSTRMATCH(value.file,">>",TokenType_method_call);\
     TOKENSTRMATCH(value.file,"::",TokenType_method_call_no_self);\
+    TOKENSTRMATCH(value.file,"=>",TokenType_fat_arrow);\
     /*Only append the ident if it doesn't match with the any of the TOKENSTRMATCH*/ \
     if (double_char == 0) {\
         options_check(containers_count, value.file);\
@@ -75,7 +76,7 @@ void options_check(int open_char_count,char* value);
 #endif
 #ifndef PARSERIMPL
 #define PARSERIMPL
-const int DROPPINGDEBUGINFO = 1;
+const int DROPPINGDEBUGINFO = 0;
 
 void options_check(int open_char_count,char* value) {
     if (open_char_count == 0) {
