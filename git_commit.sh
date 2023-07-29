@@ -1,5 +1,7 @@
 #!/bin/sh
 REPO="git@github.com:AngryBeltMan/Kiln_lang.git"
+ssh git@github.com
+
 git add .
 
 while getopts ":m:d" opt; do
