@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "../heap_array.h"
+#include "../hashmap/hashmap.h"
 #include "compiler_parser.h"
 #include "compiler_parser.c"
 #include "modules.h"
@@ -20,13 +21,13 @@ Compiler COMPILER_new() {
 
 
 
-void COMPILER_parse(Compiler *P_comp, Expressions *P_exprs) {
+void COMPILER_parse(Compiler *P_comp, Expressions *P_exprs, Hashmap *P_hashmap) {
     for (int i = 0; i < (P_exprs->size / sizeof(Expression)); ++i) {
         unsigned int token_index = 0;
         Token token = P_exprs->exprs[i].tokens[token_index];
         switch (token.token_type) {
             case TokenType_Ident: {
-                parse_expression_from_keyword(get_ident_type(token.value), P_comp,P_exprs, i);
+                parse_expression_from_keyword(get_ident_type(token.value), P_comp,P_exprs, i, P_hashmap);
                 continue;
             }
             case TokenType_RightBracket: {
@@ -37,8 +38,8 @@ void COMPILER_parse(Compiler *P_comp, Expressions *P_exprs) {
                 continue;
             }
             case TokenType_AtSign: {
-                IdentType keyword = SETTINGS_get_identtype(P_exprs->exprs);
-                parse_expression_from_keyword( keyword, P_comp, P_exprs, i);
+                IdentType keyword = SETTINGS_get_identtype(&P_exprs->exprs[i]);
+                parse_expression_from_keyword( keyword, P_comp, P_exprs, i, P_hashmap);
                 continue;
             }
             default: {

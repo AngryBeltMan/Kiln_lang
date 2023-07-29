@@ -1,6 +1,12 @@
 #include<stdlib.h>
-typedef struct Hello { int name; } Hello;
-typedef struct return { int@inlinefuncself_wow(int what; self cool; } return;
+typedef struct Number {  int numberator; int denominator ; } Number;
+int __METHOD_Numberadd_one(Number number, int num) {
+number.denominator = num;
+return number.numberator;
+}
+int __MAIN() {
+Number wow = 10;
+__METHOD_Numberadd_one(wow,10);
 }
 
 int main() {

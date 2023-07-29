@@ -1,6 +1,7 @@
 #ifndef CALLS
 #define CALLS
 #include "../compiler/compiler.h"
+#include "../hashmap/hashmap.h"
 typedef enum Arithmetic {
     ARITHMETIC_addition,
     ARITHMETIC_subtraction,
@@ -37,7 +38,7 @@ typedef struct CallsType {
     } Type;
 } CallsType;
 
-CallsType CALLSTYPE_parse(Expression *P_expr, int start_index);
+CallsType CALLSTYPE_parse(Expression *P_expr, Hashmap *var_hash, int start_index);
 void CALLSTYPE_write_to_file(Compiler *P_comp, CallsType call_type);
 void CALLSTYPE_free(CallsType call_type);
 #endif

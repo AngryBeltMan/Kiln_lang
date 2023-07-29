@@ -16,7 +16,7 @@ IdentType SETTINGS_get_identtype(Expression *P_expr) {
             }
         }
     }
-    assert(0 && "ERROR: could not find a keyword while parsing setting");
+    assert(2 + 2 == 5 && "ERROR: could not find a keyword while parsing setting");
 }
 
 #endif

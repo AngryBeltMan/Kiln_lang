@@ -4,6 +4,7 @@
 #include "../contents.c"
 #include "../compiler/modules.h"
 #include "../compiler/modules.c"
+#include "../hashmap/hashmap.h"
 #include "variables.h"
 #include <assert.h>
 #include <stdio.h>
@@ -57,7 +58,7 @@ char* get_var_ident(Expression* P_expr, int* index) {
 
 // let <name> $<type> = !<@args> <value>
 // will stay the same right now will likely change
-VarOpts VAROPTS_expression_parse(Expression *P_expr, Compiler *P_comp) {
+VarOpts VAROPTS_expression_parse(Expression *P_expr, Compiler *P_comp, Hashmap *var_hashmap) {
     VarOpts varopts = VAROPTS_new();
     // skips over the let expression
     int expression_index = 1;
@@ -67,7 +68,8 @@ VarOpts VAROPTS_expression_parse(Expression *P_expr, Compiler *P_comp) {
     varopts.type = get_var_ident(P_expr, &expression_index);
     if (varopts.type == NULL) { abort(); }
     expression_index += 1;
-    variable_value_parse(&expression_index, P_expr, P_comp, &varopts);
+    variable_value_parse(&expression_index, P_expr, P_comp, &varopts, var_hashmap);
+    hashmap_set( var_hashmap, &(VarData){.name= varopts.name, .type= varopts.type});
     return varopts;
 }
 
@@ -82,7 +84,7 @@ char* parse_setting_var(Expression *P_expr, int *varname_index) {
     return NULL;
 }
 
-void variable_value_parse(int* ident_token,Expression* P_expr,Compiler* P_comp, VarOpts* varopts) {
+void variable_value_parse(int* ident_token,Expression* P_expr,Compiler* P_comp, VarOpts* varopts, Hashmap *var_hashmap) {
     Contents var_value = CONTENTS_new();
     for (; *ident_token < (P_expr->size)/sizeof(Token); ++*ident_token) {
         Token value = P_expr->tokens[*ident_token];

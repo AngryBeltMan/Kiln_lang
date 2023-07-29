@@ -73,6 +73,7 @@ FuncOpt FUNCTION_parse(Expression *P_expr) {
     int func_index = settings_parse(P_expr, &opts);
     printf("fn index %i\n", func_index);
     char *fn_name = P_expr->tokens[func_index].value;
+    printf("%c\n", P_expr->tokens[func_index + 1].character);
     assert(fn_name != NULL && "ERROR: could not parse function name.");
     // gets the index for the left parenthesis token
     ++func_index;
@@ -86,24 +87,25 @@ FuncOpt FUNCTION_parse(Expression *P_expr) {
     // right parenthesis is encountered
     ++func_index;
     Contents args = token_parse_expression_until(P_expr, func_index, TokenType_RightParenthesis);
-    if (opts.method != NULL) {
-        printf("method %s\n",opts.method);
-        if (strstr(args.file, "self") != NULL) {
-            printf("args %s\n",args.file);
-            Contents new_args = CONTENTS_replace(&args, "self", opts.method);
-            printf("new args %s\n",new_args.file);
-            CONTENTS_drop(args);
-            args = new_args;
-        }
-    }
     // if there is no arguments add void
     // this is done so the args value is atleast initialized
     if (args.size == 0) { CONTENTS_append_str(&args,"void"); }
 
-
     // add all of the function data in the opts struct
     opts.args = args.file;
     opts.name = fn_name;
+
+    if (opts.method != NULL) {
+        if (strstr(args.file, "self") != NULL) {
+            // replace the first occurace of self with the the type the method is being implemented for
+            Contents new_args = CONTENTS_replace(&args, "self", opts.method);
+            Contents new_name = CONTENTS_new();
+            CONTENTS_append_formatted(&new_name, "__METHOD_%s%s",opts.method,opts.name);
+            opts.name = new_name.file;
+            CONTENTS_drop(args);
+            opts.args = new_args.file;
+        }
+    }
     return opts;
 }
 
@@ -123,6 +125,7 @@ void FUNCTION_write_to_file(Compiler *P_comp, FuncOpt opt) {
         CONTENTS_append_formatted (&P_comp->contents, "%s %s(%s) {\n", opt.return_type,
                 opt.name, opt.args);
     }
+    if (opt.method) { free(opt.name); }
     free(opt.args);
 }
 #endif

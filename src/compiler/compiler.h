@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "../parser/parser.h"
+#include "../hashmap/hashmap.h"
 #include "../contents.c"
 #include "../lib_tools.c"
 #include "../lib_tools.h"
@@ -22,7 +23,7 @@ typedef struct Compiler {
 Compiler COMPILER_new();
 
 // parse the file expressions into a c file
-void COMPILER_parse(Compiler* P_comp,Expressions *P_exprs);
+void COMPILER_parse(Compiler* P_comp,Expressions *P_exprs, Hashmap *P_hashmap);
 
 // frees all of the heap memory held in the compiler
 void COMPILER_drop(Compiler comp);

@@ -55,6 +55,8 @@ void options_check(int open_char_count,char* value);
     /* Token str match with set double char to one if they match with the second argument*/ \
     TOKENSTRMATCH(value.file,"->",TokenType_RightArrow);\
     TOKENSTRMATCH(value.file,"<-",TokenType_LeftArrow);\
+    TOKENSTRMATCH(value.file,">>",TokenType_method_call);\
+    TOKENSTRMATCH(value.file,"::",TokenType_method_call_no_self);\
     /*Only append the ident if it doesn't match with the any of the TOKENSTRMATCH*/ \
     if (double_char == 0) {\
         options_check(containers_count, value.file);\

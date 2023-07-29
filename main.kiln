@@ -1,4 +1,15 @@
-@return=int
-@inline
-func self_wow(int what, self cool) {
+struct Number ( int numberator, int denominator );
+
+@method=Number
+@return= int
+func add_one(self number, int num) {
+    number.denominator = num;
+    ret number.numberator;
+}
+
+
+@main
+func main() {
+    let wow $Number = 10;
+    wow >> add_one(10);
 }

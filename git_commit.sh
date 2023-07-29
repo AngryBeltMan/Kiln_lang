@@ -1,12 +1,15 @@
 #!/bin/sh
 REPO="git@github.com:AngryBeltMan/Kiln_lang.git"
 git add .
-while getopts ":a:d" opt; do
+
+while getopts ":m:d" opt; do
     case $opt in
-        a)
+        m)
+            echo "commiting with message"
             git commit -m "$OPTARG"
             ;;
         d)
+            echo "commiting with default message"
             git commit -m "default"
             ;;
     esac

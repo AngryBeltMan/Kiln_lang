@@ -18,6 +18,7 @@
 #include "../parser/tokens.c"
 #include "../structs/structs.h"
 #include "../structs/structs.c"
+#include <stdio.h>
 
 #define TOKEN_CMP(ident, name, type)\
     if (!strcmp(ident, name)) {\
@@ -25,6 +26,7 @@
     }
 
 IdentType get_ident_type(char *ident) {
+    printf("%s",ident);
     TOKEN_CMP(ident, "print", IdentType_print);
     TOKEN_CMP(ident, "println", IdentType_println);
     TOKEN_CMP(ident, "fprint", IdentType_printf);
@@ -36,7 +38,7 @@ IdentType get_ident_type(char *ident) {
     TOKEN_CMP(ident, "ret", IdentType_return_fn);
     TOKEN_CMP(ident, "struct", IdentType_struct_init);
     TOKEN_CMP(&ident[0], "}", IdentType_break_bracket);
-    printf("varname\n");
+    printf("varname %s\n",ident);
     return IdentType_var_name;
 }
 
@@ -48,40 +50,45 @@ void write_print(Compiler *P_comp, Expression *P_expr, char *formatting) {
     contents.file = NULL;
 }
 
-void parse_expression_from_keyword(IdentType ident_type, Compiler *P_comp, Expressions *P_exprs, int index) {
-
-    /* switch (get_ident_type(token.value)) { */
+void parse_expression_from_keyword(IdentType ident_type, Compiler *P_comp, Expressions *P_exprs, int index, Hashmap* var_map) {
     switch (ident_type) {
         // println("hello world");
-        case IdentType_println:
+        case IdentType_println: {
             write_print(P_comp, &P_exprs->exprs[index], "\\n\");\n");
             break;
-        case IdentType_print:
+        }
+        case IdentType_print:{
             write_print(P_comp, &P_exprs->exprs[index], "\");\n");
             break;
-            // let num $int = 10;
-        case IdentType_var_init:
+        }
+        // let num $int = 10;
+        case IdentType_var_init: {
             printf("initing\n");
-            VarOpts varopts = VAROPTS_expression_parse(&P_exprs->exprs[index], P_comp);
+            VarOpts varopts = VAROPTS_expression_parse(&P_exprs->exprs[index], P_comp, var_map);
             VAROPTS_create_var(varopts, P_comp);
             break;
-        case IdentType_if_statement:
+         }
+        case IdentType_if_statement: {
             printf("if statement\n");
             IfStatementOpt ifopts = IFSTATEMENT_parse(&P_exprs->exprs[index]);
             IFSTATEMENT_write_to_file(P_comp, ifopts);
             break;
-        case IdentType_for_loop:
+         }
+        case IdentType_for_loop: {
             printf("for loop\n");
             ForLoopOpt for_opts = FORLOOP_parse(&P_exprs->exprs[index]);
             FORLOOP_write_to_file(P_comp, for_opts);
             break;
-        case IdentType_function:
+         }
+        case IdentType_function: {
             printf("function\n");
             FuncOpt func_opts = FUNCTION_parse(&P_exprs->exprs[index]);
             FUNCTION_write_to_file(P_comp, func_opts);
             break;
+        }
         case IdentType_var_name: {
-            CallsType call = CALLSTYPE_parse(&P_exprs->exprs[index],0);
+            if (P_exprs->exprs[index].size == 8) { break; }
+            CallsType call = CALLSTYPE_parse(&P_exprs->exprs[index], var_map,0);
             CALLSTYPE_write_to_file(P_comp, call);
             CALLSTYPE_free(call);
             break;
@@ -93,11 +100,14 @@ void parse_expression_from_keyword(IdentType ident_type, Compiler *P_comp, Expre
             break;
         }
         case IdentType_struct_init: {
+            printf("struct init\n");
             StructOpt opts = STRUCT_parse_file(&P_exprs->exprs[index]);
             STRUCT_write_to_file(P_comp, opts);
+            break;
         }
-        default:
+        default:{
             printf("other type %i\n", ident_type);
             break;
+        }
     }
 }

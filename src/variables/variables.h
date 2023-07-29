@@ -2,6 +2,7 @@
 
 #ifndef VARIABLESETTINGS
 #define VARIABLESETTINGS
+#include "../hashmap/hashmap.h"
 typedef struct VarOpts {
     char* name;
     char* type;
@@ -13,9 +14,9 @@ typedef struct VarOpts {
     int string;
 } VarOpts;
 
-void variable_value_parse(int* ident_token,Expression* P_expr,Compiler* P_comp,VarOpts* P_varopts);
+void variable_value_parse(int* ident_token,Expression* P_expr,Compiler* P_comp,VarOpts* P_varopts, Hashmap *P_hashmap);
 
-VarOpts VAROPTS_expression_parse(Expression* P_expr, Compiler *P_comp);
+VarOpts VAROPTS_expression_parse(Expression* P_expr, Compiler *P_comp, Hashmap *P_hashmap);
 
 char* parse_setting_var(Expression *P_expr, int *ident_token);
 
