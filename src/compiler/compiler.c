@@ -34,8 +34,11 @@ void COMPILER_parse(Compiler *P_comp, Expressions *P_exprs, Hashmap *P_hashmap) 
                 CONTENTS_append_str(&P_comp->contents, "}\n");
                 continue;
             }
-            case TokenType_RightArrow: {
-                continue;
+            case TokenType_c_call: {
+                Contents c_code =  token_parse_expression_to_end(&P_exprs->exprs[i], 1);
+                CONTENTS_append_formatted(&P_comp->contents,"%s;\n", c_code.file);
+                CONTENTS_drop(c_code);
+                break;
             }
             case TokenType_AtSign: {
                 IdentType keyword = SETTINGS_get_identtype(&P_exprs->exprs[i]);

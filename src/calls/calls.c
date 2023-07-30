@@ -4,7 +4,7 @@
 #include "../compiler/compiler.h"
 #include "../contents.c"
 
-void method_write_to_file(Expression *P_expr,CallsType *P_calls, Hashmap *var_map, int reference, int start_index) {
+void method_write_to_file(Expression *P_expr,CallsType *P_calls, Hashmap *var_map, int reference, int start_index, int include_self) {
     Token var_name = P_expr->tokens[start_index];
     assert(var_name.token_type == TokenType_Ident && "Error: expected name after");
     // Vae map will be used to look up the type of the variable in order to know which method to call
@@ -16,7 +16,7 @@ void method_write_to_file(Expression *P_expr,CallsType *P_calls, Hashmap *var_ma
     if (args.size == 0) {
         CONTENTS_append_formatted(&modified_args, "%s",var_name.value);
     } else {
-        CONTENTS_append_formatted(&modified_args, "%s,%s",var_name.value, args.file);
+        CONTENTS_append_formatted(&modified_args, "%s%c%s",include_self ? var_name.value: "", include_self? ',': ' ', args.file);
     }
 
     CONTENTS_drop(args);
@@ -60,11 +60,15 @@ CallsType CALLSTYPE_parse(Expression *P_expr, Hashmap *var_map, int start_index)
             break;
         }
         case TokenType_method_call: {
-            method_write_to_file(P_expr, &call_type, var_map, 1, start_index);
+            method_write_to_file(P_expr, &call_type, var_map, 1, start_index, 1);
             break;
         }
         case TokenType_RightArrow: {
-            method_write_to_file(P_expr, &call_type, var_map, 0, start_index);
+            method_write_to_file(P_expr, &call_type, var_map, 0, start_index, 1);
+            break;
+        }
+        case TokenType_method_call_no_self: {
+            method_write_to_file(P_expr, &call_type, var_map, 0, start_index, 0);
             break;
         }
         case TokenType_Ident: {

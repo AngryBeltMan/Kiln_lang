@@ -57,7 +57,15 @@ void options_check(int open_char_count,char* value);
     TOKENSTRMATCH(value.file,"<-",TokenType_LeftArrow);\
     TOKENSTRMATCH(value.file,">>",TokenType_method_call);\
     TOKENSTRMATCH(value.file,"::",TokenType_method_call_no_self);\
-    TOKENSTRMATCH(value.file,"=>",TokenType_fat_arrow);\
+    if (!strcmp(value.file, ":!")) {\
+        token.value = value.file;\
+        token.token_type = TokenType_c_call;\
+        EXP_APPEND(&expr,token);\
+        value = CONTENTS_new(); \
+        identifier = 0; \
+        double_char = 1; \
+        c_code_case = 1;\
+    }\
     /*Only append the ident if it doesn't match with the any of the TOKENSTRMATCH*/ \
     if (double_char == 0) {\
         options_check(containers_count, value.file);\
@@ -158,11 +166,14 @@ Expressions EXPRESSIONS_from_file(FILE *P_file) {
     // will decide whether or not to parse or ignore the spaces
     int containers_count = 0;
     int open_quote = 0;
+    // don't ignore spaces if it is parsing c code
+    int c_code_case = 0;
 
     while ((ch = fgetc(P_file)) != EOF /* End of file char*/) {
         switch ((char)ch) {
             case '\n':
                 CONTENTSCHECK();
+                c_code_case = 0;
                 break;
             case ';':
                 if (identifier == 1) {
@@ -193,7 +204,7 @@ Expressions EXPRESSIONS_from_file(FILE *P_file) {
                 break;
             case ' ':
                 CONTENTSCHECK();
-                if (containers_count == 0) { break; }
+                if (!containers_count && !c_code_case) { break; }
                 TOKENAPPEND(' ',TokenType_Space);
                 break;
             TOKENMATCHEXIT('}', TokenType_RightBracket)

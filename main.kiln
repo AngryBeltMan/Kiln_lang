@@ -10,5 +10,6 @@ func set(self* number, int n, int d) {
 @main
 func main() {
     let wow $Number = 10;
-    wow -> add_one(10, 12);
+    wow :: add_one(10, 12);
+    :! int cool = 90;
 }

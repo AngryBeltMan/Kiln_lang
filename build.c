@@ -6,7 +6,8 @@ number.denominator = d;
 }
 int __MAIN() {
 Number wow = 10;
-__METHOD_Numberadd_one(wow,10, 12);
+__METHOD_Numberadd_one( 10, 12);
+ int cool = 90;
 }
 
 int main() {

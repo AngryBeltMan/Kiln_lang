@@ -19,18 +19,31 @@ typedef enum TokenType {
     TokenType_AtSign,
     TokenType_EqualSign,
     TokenType_Space,
+    // "~"
+    // For single line comments
+    TokenType_Tilde,
     // Nonexistant Token
     TokenType_None,
     // double char tokens
+
+    // ->
     TokenType_RightArrow,
+    // >>
     TokenType_method_call,
-    TokenType_fat_arrow,
+    // ::
     TokenType_method_call_no_self,
+    // <-
     TokenType_LeftArrow,
+    // ++
     TokenType_Addition,
+    // --
     TokenType_Subtraction,
+    // **
     TokenType_Multiplication,
+    // //
     TokenType_Division,
+    // :!
+    TokenType_c_call
 } TokenType;
 typedef enum IdentType {
     IdentType_println,
