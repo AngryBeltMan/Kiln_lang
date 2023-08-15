@@ -1,15 +1,9 @@
-struct Number ( int numberator, int denominator );
+export_name Cool;
 
-@method=Number
-func set(self* number, int n, int d) {
-    number.numberator = n;
-    number.denominator = d;
-}
-
+@path=other_main.kiln
+bring Cool#(cool);
 
 @main
 func main() {
-    let wow $Number = 10;
-    wow :: add_one(10, 12);
-    :! int cool = 90;
+    cool();
 }

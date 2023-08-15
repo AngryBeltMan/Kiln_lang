@@ -3,16 +3,17 @@
 #ifndef CALLDEF
 #include "../compiler/compiler.h"
 #include "../contents.c"
+#include "../functions/functions.h"
 
-void method_write_to_file(Expression *P_expr,CallsType *P_calls, Hashmap *var_map, int reference, int start_index, int include_self) {
+void method_write_to_file(Expression *P_expr,CallsType *P_calls, Hashmap *var_map, Hashmap *func_map,char* self_module_name, int reference, int start_index, int include_self) {
     Token var_name = P_expr->tokens[start_index];
     assert(var_name.token_type == TokenType_Ident && "Error: expected name after");
     // Vae map will be used to look up the type of the variable in order to know which method to call
     VarData* var_type = (VarData*)hashmap_get(var_map, &(VarData){.name = var_name.value});
     Contents args = token_parse_expression_until(P_expr, start_index + 4, TokenType_RightParenthesis);
     Contents modified_args = CONTENTS_new();
-    if (reference) { CONTENTS_append(&modified_args, '&'); }
 
+    if (reference) { CONTENTS_append(&modified_args, '&'); }
     if (args.size == 0) {
         CONTENTS_append_formatted(&modified_args, "%s",var_name.value);
     } else {
@@ -22,13 +23,21 @@ void method_write_to_file(Expression *P_expr,CallsType *P_calls, Hashmap *var_ma
     CONTENTS_drop(args);
     Contents function_name = CONTENTS_new();
     CONTENTS_append_formatted(&function_name, "__METHOD_%s%s",var_type->type, P_expr->tokens[start_index + 2] );
+    // finds module where the function occured
+    FuncMap* functions_module = (FuncMap*)hashmap_get(func_map, &(FuncMap){
+        .function = function_name.file
+    });
+    char* fn_module_name = (functions_module) ? functions_module->module_name : self_module_name;
+    Contents new_func_name = CONTENTS_new();
+    CONTENTS_append_formatted(&new_func_name, "__MODULE%s%s", fn_module_name, function_name);
+    CONTENTS_drop(function_name);
     P_calls->Type.FnCall.args = modified_args.file;
-    P_calls->Type.FnCall.fn_name = function_name.file;
+    P_calls->Type.FnCall.fn_name = new_func_name.file;
     P_calls->CallTypeArm = CALLTYPEARM_fn_call;
     P_calls->is_method = 1;
 }
 
-CallsType CALLSTYPE_parse(Expression *P_expr, Hashmap *var_map, int start_index) {
+CallsType CALLSTYPE_parse(Expression *P_expr, Hashmap *var_map,Hashmap *func_map,char* self_module_name, int start_index) {
     CallsType call_type;
     int next_tok_type = P_expr->tokens[start_index + 1].token_type;
     switch (next_tok_type) {
@@ -38,11 +47,17 @@ CallsType CALLSTYPE_parse(Expression *P_expr, Hashmap *var_map, int start_index)
         //              next token is a left parenthesis
         case TokenType_LeftParenthesis: {
             char* func_name = P_expr->tokens[start_index].value;
+            FuncMap* function_module = (FuncMap*)hashmap_get(func_map, &(FuncMap){
+                .function = func_name
+            });
+            char* fn_module_name = (function_module) ? function_module->module_name : self_module_name;
+            Contents new_func_name = CONTENTS_new();
+            CONTENTS_append_formatted(&new_func_name, "__MODULE%s%s", fn_module_name, func_name);
             // gets the function arguments
             Contents args = token_parse_expression_until(P_expr, start_index + 2, TokenType_RightParenthesis);
             if (args.size == 0) { CONTENTS_append(&args,' '); }
             call_type.Type.FnCall.args = args.file;
-            call_type.Type.FnCall.fn_name = func_name;
+            call_type.Type.FnCall.fn_name = new_func_name.file;
             call_type.is_method = 0;
             call_type.CallTypeArm = CALLTYPEARM_fn_call;
             break;
@@ -53,22 +68,22 @@ CallsType CALLSTYPE_parse(Expression *P_expr, Hashmap *var_map, int start_index)
             call_type.Type.VarAssign.value = malloc(24);
             // 16 is the size of the Token
             if ( P_expr->size / 16 > (start_index + 3)) {
-                *call_type.Type.VarAssign.value = CALLSTYPE_parse(P_expr, var_map, start_index + 2);
+                *call_type.Type.VarAssign.value = CALLSTYPE_parse(P_expr, var_map, func_map, self_module_name, start_index + 2);
             } else {
-                *call_type.Type.VarAssign.value = CALLSTYPE_parse(P_expr, var_map, start_index + 1);
+                *call_type.Type.VarAssign.value = CALLSTYPE_parse(P_expr, var_map, func_map, self_module_name, start_index + 1);
             }
             break;
         }
         case TokenType_method_call: {
-            method_write_to_file(P_expr, &call_type, var_map, 1, start_index, 1);
+            method_write_to_file(P_expr, &call_type, var_map,func_map,self_module_name, 1, start_index, 1);
             break;
         }
         case TokenType_RightArrow: {
-            method_write_to_file(P_expr, &call_type, var_map, 0, start_index, 1);
+            method_write_to_file(P_expr, &call_type, var_map,func_map, self_module_name, 0, start_index, 1);
             break;
         }
         case TokenType_method_call_no_self: {
-            method_write_to_file(P_expr, &call_type, var_map, 0, start_index, 0);
+            method_write_to_file(P_expr, &call_type, var_map,func_map, self_module_name, 0, start_index, 0);
             break;
         }
         case TokenType_Ident: {

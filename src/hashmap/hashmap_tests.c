@@ -20,8 +20,11 @@ int main() {
     strcpy(name, "joe");
     strcpy(type, "builder");
     hashmap_set(hmap, &(VarData) {.name = name, .type = type});
-    VarData *data = (VarData*)hashmap_get(hmap, &(VarData) {.name = "joe"});
-    printf("%s\n",data->type);
+    VarData *data = (VarData*)hashmap_get(hmap, &(VarData) {.name = "jklfdjsaklfj"});
+    if (data == NULL) {
+        printf("NULL\n");
+    }
+    /* printf("val %s\n",data->type); */
     hashmap_free(hmap);
 
 }

@@ -9,6 +9,8 @@
 #include "../parser/parser.h"
 #include "../parser/tokens.h"
 #include "../variables/variables.h"
+#include "../settings.h"
+#include "../lib_tools.h"
 
 FuncOpt FUNCTION_new() {
     FuncOpt opts;
@@ -18,6 +20,7 @@ FuncOpt FUNCTION_new() {
     opts.method = NULL;
     opts.fn_type = FUNCTYPE_None;
     opts.inline_fn = 0;
+    opts.is_public = 0;
     return opts;
 }
 
@@ -26,36 +29,20 @@ int settings_parse(Expression *P_expr, FuncOpt *opts) {
     int setting;
     do {
         setting = TOKEN_expression_index(P_expr, index, TokenType_AtSign);
-        /* setting = EXPRESSION_token_exist(P_expr, index, TokenType_AtSign); */
         if (setting != -1) {
             Token setting_type = P_expr->tokens[setting + 1];
             assert(setting_type.token_type == TokenType_Ident && "ERROR: expected token ident after token '@'");
-            if (!strcmp(setting_type.value, "return")) {
-                index = setting;
-                char *return_val = parse_setting_var(P_expr, &index);
-                assert(return_val != NULL &&
-                        "ERROR: return setting var requires a return type value\n");
-                opts->return_type = return_val;
-            }
-            if (!strcmp(setting_type.value, "method")) {
-                index = setting;
-                char *method_for = parse_setting_var(P_expr, &index);
-                assert(method_for != NULL &&
-                        "ERROR: return setting var requires a return type value\n");
-                opts->method = method_for;
-            }
-            if (!strcmp(setting_type.value, "main")) {
-                opts->fn_type = FUNCTYPE_main;
-                index += 1;
-            }
-            if (!strcmp(setting_type.value, "inline")) {
-                opts->inline_fn = 1;
-                index += 1;
-            }
+
+            SETTING_VAR_PARSE(setting_type, P_expr,"return",index,setting, opts,return_type, 0);
+            SETTING_VAR_PARSE(setting_type, P_expr, "method", index, setting, opts, method, 0);
+
+            SETTING_VALUE_PARSE(setting_type, "main", opts, index, fn_type, FUNCTYPE_main);
+            SETTING_VALUE_PARSE(setting_type, "inline", opts, index, inline_fn, 1);
+            SETTING_VALUE_PARSE(setting_type, "public", opts, index, is_public, 1);
         }
     } while (setting != -1);
     // returns two if index is -1 (no settings to parse)
-    return index == -1 ? 1 : index + 2;
+    return !index ? 1 : index + 2;
 }
 
 FuncOpt FUNCTION_parse(Expression *P_expr) {
@@ -65,6 +52,7 @@ FuncOpt FUNCTION_parse(Expression *P_expr) {
     // parses all of the settings args aka @name tokens
     int func_index = settings_parse(P_expr, &opts);
     char *fn_name = P_expr->tokens[func_index].value;
+    printf("fn name type %i\n", P_expr->tokens[func_index].token_type);
     assert(fn_name != NULL && "ERROR: could not parse function name.");
     // gets the index for the left parenthesis token
     ++func_index;
@@ -87,12 +75,12 @@ FuncOpt FUNCTION_parse(Expression *P_expr) {
     opts.name = fn_name;
 
     if (opts.method != NULL) {
+        Contents new_name = CONTENTS_new();
+        CONTENTS_append_formatted(&new_name, "__METHOD_%s%s",opts.method,opts.name);
+        opts.name = new_name.file;
         if (strstr(args.file, "self") != NULL) {
             // replace the first occurace of self with the the type the method is being implemented for
             Contents new_args = CONTENTS_replace(&args, "self", opts.method);
-            Contents new_name = CONTENTS_new();
-            CONTENTS_append_formatted(&new_name, "__METHOD_%s%s",opts.method,opts.name);
-            opts.name = new_name.file;
             CONTENTS_drop(args);
             opts.args = new_args.file;
         }
@@ -100,8 +88,13 @@ FuncOpt FUNCTION_parse(Expression *P_expr) {
     return opts;
 }
 
-void FUNCTION_write_to_file(Compiler *P_comp, FuncOpt opt) {
+void FUNCTION_write_to_file(Compiler *P_comp, FuncOpt opt, char* module_name) {
+    if (opt.is_public) {
+        CONTENTS_append_formatted(&P_comp->contents, "#ifdef ___MODULE_%sBRANCH__%s\n",module_name, opt.name);
+        IS_PUBLIC = 1;
+    }
     if (opt.fn_type == FUNCTYPE_main) {
+        INITED_MAIN = 1;
         // if it contians the main decorator ignore all of the arguments and function name
         char* heap_alloc = INITED_HEAP_ARRAY ? " __HeapArray *___heap": "";
         CONTENTS_append_formatted (&P_comp->contents, "int __MAIN(%s) {\n", heap_alloc);
@@ -111,10 +104,9 @@ void FUNCTION_write_to_file(Compiler *P_comp, FuncOpt opt) {
     if (opt.inline_fn) { CONTENTS_append_str(&P_comp->contents, "static inline "); }
     // If there is no return type given set the return type to null
     if (opt.return_type == NULL) {
-        CONTENTS_append_formatted (&P_comp->contents, "void %s(%s) {\n", opt.name, opt.args);
+        CONTENTS_append_formatted (&P_comp->contents, "void __MODULE%s%s(%s) {\n",module_name, opt.name, opt.args);
     } else {
-        CONTENTS_append_formatted (&P_comp->contents, "%s %s(%s) {\n", opt.return_type,
-                opt.name, opt.args);
+        CONTENTS_append_formatted (&P_comp->contents, "%s __MODULE%s%s(%s) {\n", opt.return_type,module_name, opt.name, opt.args);
     }
     if (opt.method) { free(opt.name); }
     free(opt.args);

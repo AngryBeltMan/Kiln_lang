@@ -18,12 +18,23 @@
 #include "../parser/tokens.c"
 #include "../structs/structs.h"
 #include "../structs/structs.c"
+#include "../contents.c"
+#include "../kiln_modules/kiln_module.h"
+#include "../kiln_modules/kiln_module.c"
+#include <assert.h>
 #include <stdio.h>
 
-#define TOKEN_CMP(ident, name, type)\
-    if (!strcmp(ident, name)) {\
-        return type;\
+#define TOKEN_CMP(ident, name, type) \
+    if (!strcmp(ident, name)) { \
+        return type; \
     }
+
+#define COMPILER_PARSE(ident_type, parse_fn, varopts, OptType) \
+    case ident_type: { \
+        OptType opts = parse_fn(&P_exprs->exprs[index]); \
+        varopts(P_comp, opts); \
+        break; \
+     }
 
 IdentType get_ident_type(char *ident) {
     printf("%s",ident);
@@ -37,6 +48,8 @@ IdentType get_ident_type(char *ident) {
     TOKEN_CMP(ident, "func", IdentType_function);
     TOKEN_CMP(ident, "ret", IdentType_return_fn);
     TOKEN_CMP(ident, "struct", IdentType_struct_init);
+    TOKEN_CMP(ident, "bring", IdentType_import_module);
+    TOKEN_CMP(ident, "export_name", IdentType_export_module_name);
     TOKEN_CMP(&ident[0], "}", IdentType_break_bracket);
     printf("varname %s\n",ident);
     return IdentType_var_name;
@@ -50,7 +63,8 @@ void write_print(Compiler *P_comp, Expression *P_expr, char *formatting) {
     contents.file = NULL;
 }
 
-void parse_expression_from_keyword(IdentType ident_type, Compiler *P_comp, Expressions *P_exprs, int index, Hashmap* var_map) {
+// P_module_name is not an array of char* instead it is a mutable pointer to chars
+void parse_expression_from_keyword(IdentType ident_type, Compiler *P_comp, Expressions *P_exprs, int index, Hashmap* var_map,Hashmap* P_func_map,  char** P_module_name) {
     switch (ident_type) {
         // println("hello world");
         case IdentType_println: {
@@ -63,32 +77,21 @@ void parse_expression_from_keyword(IdentType ident_type, Compiler *P_comp, Expre
         }
         // let num $int = 10;
         case IdentType_var_init: {
-            printf("initing\n");
             VarOpts varopts = VAROPTS_expression_parse(&P_exprs->exprs[index], P_comp, var_map);
             VAROPTS_create_var(varopts, P_comp);
             break;
-         }
-        case IdentType_if_statement: {
-            printf("if statement\n");
-            IfStatementOpt ifopts = IFSTATEMENT_parse(&P_exprs->exprs[index]);
-            IFSTATEMENT_write_to_file(P_comp, ifopts);
-            break;
-         }
-        case IdentType_for_loop: {
-            printf("for loop\n");
-            ForLoopOpt for_opts = FORLOOP_parse(&P_exprs->exprs[index]);
-            FORLOOP_write_to_file(P_comp, for_opts);
-            break;
-         }
+        }
+        COMPILER_PARSE(IdentType_if_statement, IFSTATEMENT_parse, IFSTATEMENT_write_to_file, IfStatementOpt)
+        COMPILER_PARSE(IdentType_for_loop, FORLOOP_parse, FORLOOP_write_to_file, ForLoopOpt)
+        COMPILER_PARSE(IdentType_struct_init, STRUCT_parse_file, STRUCT_write_to_file, StructOpt)
         case IdentType_function: {
-            printf("function\n");
             FuncOpt func_opts = FUNCTION_parse(&P_exprs->exprs[index]);
-            FUNCTION_write_to_file(P_comp, func_opts);
+            FUNCTION_write_to_file(P_comp, func_opts, *P_module_name);
             break;
         }
         case IdentType_var_name: {
             if (P_exprs->exprs[index].size == 8) { break; }
-            CallsType call = CALLSTYPE_parse(&P_exprs->exprs[index], var_map,0);
+            struct CallsType call = CALLSTYPE_parse(&P_exprs->exprs[index], var_map, P_func_map, *P_module_name, 0);
             CALLSTYPE_write_to_file(P_comp, call);
             CALLSTYPE_free(call);
             break;
@@ -99,14 +102,18 @@ void parse_expression_from_keyword(IdentType ident_type, Compiler *P_comp, Expre
             free(return_val);
             break;
         }
-        case IdentType_struct_init: {
-            printf("struct init\n");
-            StructOpt opts = STRUCT_parse_file(&P_exprs->exprs[index]);
-            STRUCT_write_to_file(P_comp, opts);
+        case IdentType_export_module_name: {
+            assert(P_exprs->exprs[index].size / sizeof(Token) > 1 && "Error: expected module name");
+            assert(P_exprs->exprs[index].tokens->token_type == TokenType_Ident && "Error: module name is not of type ident");
+            *P_module_name = P_exprs->exprs[index].tokens[1].value;
             break;
         }
-        default:{
-            printf("other type %i\n", ident_type);
+        case IdentType_import_module: {
+            KilnModule opts = KILNMODULE_parse(&P_exprs->exprs[index], P_func_map, &P_comp->included_files );
+            KILNMODULE_write_to_file(P_comp, opts);
+            break;
+        }
+        default: {
             break;
         }
     }

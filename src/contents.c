@@ -44,20 +44,39 @@ static inline void CONTENTS_append_str(Contents *con,char* string) {
     con->size += strlen(string);
 }
 
+// get a slice of the CONTENT given a start and end
 static inline Contents CONTENTS_slice_range(Contents *P_con,unsigned int start,unsigned int end) {
     Contents cont = CONTENTS_new();
+    assert(cont.size > end && "ERROR: End length is greater than content");
+    assert(start < end && "ERROR: start is greater than end");
     for (;start <= end; ++start) {
         CONTENTS_append(&cont, P_con->file[start]);
     }
     return cont;
 }
-
+static inline Contents CONTENTS_from(char* string) {
+    Contents con = CONTENTS_new();
+    CONTENTS_append_str(&con, string);
+    return con;
+}
 Contents CONTENTS_from_char_slice_range(char *P_con,unsigned int start,unsigned int end) {
     Contents cont = CONTENTS_new();
     for (;start <= end; ++start) {
         CONTENTS_append(&cont, P_con[start]);
     }
     return cont;
+}
+// Removes a set amount of characters from the back. Should be faster than using CONTENTS_slice_range to remove characters.
+static inline void CONTENTS_pop_back(Contents *P_con, unsigned int amount) {
+    assert(P_con->size > amount && "ERROR: Contents is not large enough");
+    const unsigned int size = P_con->size - amount;
+    char* new_file = malloc(size + 8);
+    assert(new_file && "ERROR: Contents failed to malloc");
+    memmove(new_file,P_con->file , size);
+    free(P_con->file);
+    P_con->file = new_file;
+    P_con->size = size;
+    P_con->max = size + 8;
 }
 
 // DOCS: append to contents using a formatted string.
@@ -86,6 +105,11 @@ static inline void CONTENTS_append_formatted(Contents*P_con,const char *fmt, ...
     }
 }
 
+static inline Contents CONTENTS_from_formatted(const char *fmt, ...) {
+    Contents con = CONTENTS_new();
+    CONTENTS_append_formatted(&con, fmt);
+    return con;
+}
 static inline void CONTENTS_pop_front(Contents *P_con, const unsigned int amount) {
     const int length = P_con->size;
     if (amount > length) {

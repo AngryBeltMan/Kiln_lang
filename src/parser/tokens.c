@@ -54,5 +54,4 @@ void CONTENTS_append_token(Contents *P_con, Token token) {
         CONTENTS_append(P_con, token.character);
     }
 }
-
 #endif

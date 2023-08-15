@@ -1,4 +1,5 @@
 #include <stdio.h>
+/* #include "modules.h" */
 #include "../parser/parser.h"
 #include "../hashmap/hashmap.h"
 #include "../contents.c"
@@ -17,13 +18,16 @@ typedef struct Compiler {
     /// vector of modules that will be included
     Vector modules;
 
+    /// vector of included file that will later be compiled to c
+    StringList included_files;
+
 } Compiler;
 
 // Creates a new compiler that will translate the kit file into a c file.
 Compiler COMPILER_new();
 
 // parse the file expressions into a c file
-void COMPILER_parse(Compiler* P_comp,Expressions *P_exprs, Hashmap *P_hashmap);
+void COMPILER_parse(Compiler* P_comp,Expressions *P_exprs, Hashmap *P_hashmap,Hashmap *P_func_map, char** P_module_name);
 
 // frees all of the heap memory held in the compiler
 void COMPILER_drop(Compiler comp);

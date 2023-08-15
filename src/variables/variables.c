@@ -34,7 +34,6 @@ void VAROPTS_create_var(VarOpts varopts,Compiler *P_comp) {
         CONTENTS_append_formatted (&P_comp->contents, "__HeapArrayAppend(___heap, %s);\n",varopts.name);
         if (varopts.string) {
             COMPILER_add_module(P_comp, MODULE_string);
-            printf("varopt value %s\n",varopts.value);
             CONTENTS_append_formatted (&P_comp->contents, "strcpy(%s,%s);\n",varopts.name,varopts.value);
         } else {
             CONTENTS_append_formatted (&P_comp->contents, "*%s = %s;\n",varopts.name,varopts.value);
@@ -92,7 +91,6 @@ void variable_value_parse(int* ident_token,Expression* P_expr,Compiler* P_comp, 
             case TokenType_DoubleQuote: {
                 Contents str = token_string_parse(P_expr, *ident_token + 1);
                 *ident_token = TOKEN_expression_index(P_expr, *ident_token + 1, TokenType_DoubleQuote );
-                printf("index ident %i\n",*ident_token);
                 // makes sure there is an end quote
                 assert((*ident_token != -1) && "Error: expected token double quote");
                 varopts->string = 1;
@@ -134,7 +132,6 @@ void variable_value_parse(int* ident_token,Expression* P_expr,Compiler* P_comp, 
             SKIPCHAR(TokenType_EqualSign);
             default:
                 CONTENTS_append(&var_value,value.character);
-                printf("other %i\n",value.token_type);
                 break;
         }
     }

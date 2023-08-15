@@ -1,7 +1,8 @@
-#ifndef MODULES
-#define MODULES
 #include "compiler.h"
 #include "../lib_tools.h"
+
+#ifndef MODULES
+#define MODULES
 
 
 typedef enum Module {

@@ -213,6 +213,7 @@ Expressions EXPRESSIONS_from_file(FILE *P_file) {
             TOKENMATCH('@', TokenType_AtSign)
             TOKENMATCH('=', TokenType_EqualSign)
             TOKENMATCH(',', TokenType_Comma)
+            TOKENMATCH('#', TokenType_Hashtag)
             default:
                 identifier = 1;
                 CONTENTS_append(&value,ch);

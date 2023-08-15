@@ -19,5 +19,6 @@ while getopts ":v:s:g" opt; do
     esac
 done
 if [ $NO_DEBUG = 1 ] ; then
-    ./kiln.out
+    echo "No debug info"
+    ./kiln.out run main.kiln
 fi

@@ -19,6 +19,7 @@ typedef enum TokenType {
     TokenType_AtSign,
     TokenType_EqualSign,
     TokenType_Space,
+    TokenType_Hashtag,
     // "~"
     // For single line comments
     TokenType_Tilde,
@@ -59,6 +60,8 @@ typedef enum IdentType {
     IdentType_struct_init,
     IdentType_function,
     IdentType_for_loop,
+    IdentType_import_module,
+    IdentType_export_module_name,
 } IdentType;
 
 typedef struct Token {

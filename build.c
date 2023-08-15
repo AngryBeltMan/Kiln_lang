@@ -1,13 +1,8 @@
 #include<stdlib.h>
-typedef struct Number {  int numberator; int denominator ; } Number;
-void __METHOD_Numberset(Number* number, int n, int d) {
-number.numberator = n;
-number.denominator = d;
-}
+#include "other_main.c"
+#define cool
 int __MAIN() {
-Number wow = 10;
-__METHOD_Numberadd_one( 10, 12);
- int cool = 90;
+__MODULECoolcool( );
 }
 
 int main() {
